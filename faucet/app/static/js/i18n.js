@@ -29,7 +29,8 @@ const translations = {
     peers: "Pares",
     mempool: "Mempool",
     balance: "Saldo",
-    fastapi_docs: "Documentação FastAPI"
+    fastapi_docs: "Documentação FastAPI",
+    language: "Idioma"
   },
   "en-GB": {
     hero_title: "Bitcoin Core study platform",
@@ -61,7 +62,8 @@ const translations = {
     peers: "Peers",
     mempool: "Mempool",
     balance: "Balance",
-    fastapi_docs: "FastAPI docs"
+    fastapi_docs: "FastAPI docs",
+    language: "Language"
   }
 };
 
@@ -80,4 +82,32 @@ function setLang(lang){
 const defaultLang = document.body.dataset.defaultLang || "pt-BR";
 const lang = localStorage.getItem("lang") || defaultLang;
 setLang(lang);
-document.querySelectorAll("[data-lang]").forEach((btn) => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
+document.querySelectorAll("[data-lang]").forEach((btn) => btn.addEventListener("click", () => {
+  setLang(btn.dataset.lang);
+  const popover = document.getElementById("settings-popover");
+  const toggle = document.getElementById("settings-toggle");
+  if(popover && toggle){
+    popover.hidden = true;
+    toggle.setAttribute("aria-expanded", "false");
+  }
+}));
+
+const settingsToggle = document.getElementById("settings-toggle");
+const settingsPopover = document.getElementById("settings-popover");
+if(settingsToggle && settingsPopover){
+  settingsToggle.addEventListener("click", () => {
+    const nextHidden = !settingsPopover.hidden;
+    settingsPopover.hidden = nextHidden;
+    settingsToggle.setAttribute("aria-expanded", String(!nextHidden));
+  });
+  document.addEventListener("click", (event) => {
+    if(event.target.closest(".settings-menu")) return;
+    settingsPopover.hidden = true;
+    settingsToggle.setAttribute("aria-expanded", "false");
+  });
+  document.addEventListener("keydown", (event) => {
+    if(event.key !== "Escape") return;
+    settingsPopover.hidden = true;
+    settingsToggle.setAttribute("aria-expanded", "false");
+  });
+}

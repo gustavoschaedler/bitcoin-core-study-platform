@@ -950,10 +950,54 @@ def wallet_create(name: str = Form(...)):
     return result
 
 
+@app.post("/api/wallet/create-faucet")
+def wallet_create_faucet():
+    name = validate_wallet_name(FAUCET_WALLET_NAME)
+    try:
+        result = rpc("createwallet", [name])
+    except HTTPException as exc:
+        # If already exists, try loading it.
+        if "Database already exists" in str(exc.detail):
+            result = rpc("loadwallet", [name])
+        else:
+            raise
+    address = rpc("getnewaddress", ["faucet"], wallet=name)
+    return {"wallet": name, "result": result, "address": address}
+
+
 @app.post("/api/wallet/load")
 def wallet_load(name: str = Form(...)):
     name = validate_wallet_name(name)
     return rpc("loadwallet", [name])
+
+
+@app.post("/api/wallet/delete")
+def wallet_delete(name: str = Form(...)):
+    name = validate_wallet_name(name)
+    try:
+        if name not in set(rpc("listwallets")):
+            rpc("loadwallet", [name])
+        info = rpc("getwalletinfo", wallet=name)
+        balance = Decimal(str(info.get("balance", 0)))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Unable to inspect wallet before deletion: {exc}") from exc
+
+    if balance > 0:
+        raise HTTPException(status_code=400, detail="Wallet has balance. Move funds before deleting it.")
+
+    try:
+        return {"wallet": name, "deleted": True, "result": rpc("deletewallet", [name])}
+    except HTTPException as exc:
+        if "Method not found" not in str(exc.detail):
+            raise
+        result = rpc("unloadwallet", [name])
+        return {
+            "wallet": name,
+            "deleted": False,
+            "unloaded": True,
+            "result": result,
+            "warning": "This Bitcoin Core RPC set does not expose deletewallet; wallet was unloaded but files were not removed.",
+        }
 
 
 @app.post("/api/wallet/address")

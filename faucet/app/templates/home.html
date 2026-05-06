@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <title>{{ title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/static/css/home.css">
+  <link rel="stylesheet" href="/static/css/home.css?v=20260506-home-settings-v2">
 </head>
 <body data-default-lang="{{ lang }}">
   <main class="page">
@@ -16,9 +16,15 @@
           <span>Bitcoin Core · RPC · ZMQ · mempool · signing</span>
         </div>
       </div>
-      <div class="lang">
-        <button data-lang="pt-BR">PT-BR</button>
-        <button data-lang="en-GB">GB-EN</button>
+      <div class="lang settings-menu">
+        <button id="settings-toggle" class="icon-button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 1 1.5h.1a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a2 2 0 1 1 0 4H21a1.6 1.6 0 0 0-1.6 1Z"/></svg>
+        </button>
+        <div id="settings-popover" class="settings-popover" hidden>
+          <span data-i18n="language">Language</span>
+          <button data-lang="pt-BR">PT-BR</button>
+          <button data-lang="en-GB">GB-EN</button>
+        </div>
       </div>
     </header>
 
@@ -76,17 +82,8 @@
       </a>
     </section>
 
-    <section class="terminal">
-      <h2 data-i18n="commands_title">Useful commands</h2>
-      <pre>cp .env.example .env
-docker compose up -d --build
-./scripts/init-wallet.sh
-./scripts/status.sh
-./scripts/mempool.sh
-./scripts/bitcoin-cli.sh getblockchaininfo</pre>
-    </section>
   </main>
-  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/i18n.js?v=20260506-home-settings-v2"></script>
   <script>
     const displayCard = document.getElementById("display-card");
     if (displayCard && location.hostname) {
