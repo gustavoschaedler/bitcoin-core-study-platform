@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/css/home.css">
+</head>
+<body data-default-lang="{{ lang }}">
+  <main class="page">
+    <header class="top">
+      <a class="brand" href="/">
+        <div class="logo">B</div>
+        <div>
+          <strong>Signet Core Study Platform</strong>
+          <span>Bitcoin Core study notes</span>
+        </div>
+      </a>
+      <div class="lang">
+        <button data-lang="pt-BR">PT-BR</button>
+        <button data-lang="en-GB">GB-EN</button>
+      </div>
+    </header>
+
+    <section class="terminal docs-view">
+      <h1>Study Docs</h1>
+      <pre>{{ content | safe }}</pre>
+    </section>
+  </main>
+  <script src="/static/js/i18n.js"></script>
+</body>
+</html>

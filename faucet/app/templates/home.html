@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/css/home.css">
+</head>
+<body data-default-lang="{{ lang }}">
+  <main class="page">
+    <header class="top">
+      <div class="brand">
+        <div class="logo">₿</div>
+        <div>
+          <strong>Signet Core Study Platform</strong>
+          <span>Bitcoin Core · RPC · ZMQ · mempool · signing</span>
+        </div>
+      </div>
+      <div class="lang">
+        <button data-lang="pt-BR">PT-BR</button>
+        <button data-lang="en-GB">GB-EN</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <div class="badge">Bitcoin Core 29 · Redis 8 · Signet</div>
+        <h1 data-i18n="hero_title">Bitcoin Core study platform</h1>
+        <p data-i18n="hero_text">
+          Bitcoin Core study platform, covering its commands via bitcoin-cli, mempool, RPC and ZMQ communication patterns, and transaction signing in the Signet environment.
+        </p>
+      </div>
+      <div class="node">
+        <span class="dot {% if summary.ok %}ok{% endif %}"></span>
+        <div>
+          <strong>{% if summary.ok %}Online{% else %}Offline{% endif %}</strong>
+          {% if summary.ok %}
+          <small>Block {{ summary.blocks }} · {{ summary.peers }} peers · {{ summary.mempool }} mempool txs</small>
+          {% else %}
+          <small>{{ summary.error }}</small>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <section class="cards">
+      <a class="card" href="/faucet">
+        <span>01</span>
+        <h2 data-i18n="faucet_title">Signet faucet</h2>
+        <p data-i18n="faucet_text">Request test coins and inspect generated transactions.</p>
+      </a>
+      <a class="card" href="/mempool">
+        <span>02</span>
+        <h2 data-i18n="mempool_title">Mempool explorer</h2>
+        <p data-i18n="mempool_text">A mempool.space-inspired interface using only HTML, CSS and JavaScript.</p>
+      </a>
+      <a class="card" href="/wallet">
+        <span>03</span>
+        <h2 data-i18n="wallet_title">Wallet and signing lab</h2>
+        <p data-i18n="wallet_text">Create wallets, derive addresses, create PSBTs and sign transactions.</p>
+      </a>
+      <a class="card" href="/stats">
+        <span>04</span>
+        <h2 data-i18n="stats_title">Container stats</h2>
+        <p data-i18n="stats_text">Monitor CPU, memory, disk I/O and network usage for all containers.</p>
+      </a>
+      <a class="card" href="/study-docs">
+        <span>05</span>
+        <h2 data-i18n="study_docs">Study docs</h2>
+        <p data-i18n="study_docs_text">Read local Bitcoin Core, RPC, ZMQ and wallet notes.</p>
+      </a>
+      <a class="card" id="display-card" href="http://localhost:8181">
+        <span>06</span>
+        <h2 data-i18n="display_title">HDMI display</h2>
+        <p data-i18n="display_text">Hardware-wallet-style node dashboard for a local screen.</p>
+      </a>
+    </section>
+
+    <section class="terminal">
+      <h2 data-i18n="commands_title">Useful commands</h2>
+      <pre>cp .env.example .env
+docker compose up -d --build
+./scripts/init-wallet.sh
+./scripts/status.sh
+./scripts/mempool.sh
+./scripts/bitcoin-cli.sh getblockchaininfo</pre>
+    </section>
+  </main>
+  <script src="/static/js/i18n.js"></script>
+  <script>
+    const displayCard = document.getElementById("display-card");
+    if (displayCard && location.hostname) {
+      displayCard.href = `${location.protocol}//${location.hostname}:8181`;
+    }
+  </script>
+</body>
+</html>

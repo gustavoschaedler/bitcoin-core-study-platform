@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/wallet-assets/css/wallet.css">
+</head>
+<body data-default-lang="{{ lang }}">
+  <main class="page">
+    <header>
+      <a href="/" data-i18n="back_home">← Home</a>
+      <h1 data-i18n="title">Wallet and signing lab</h1>
+      <div><button data-lang="pt-BR">PT-BR</button><button data-lang="en-GB">GB-EN</button></div>
+    </header>
+
+    <section class="wallets-panel">
+      <div class="panel-title">
+        <h2 data-i18n="wallets">Existing wallets</h2>
+        <button id="refresh-wallets" type="button" data-i18n="refresh">Refresh</button>
+      </div>
+      <div id="wallets-list" class="wallets-list">
+        <div class="empty" data-i18n="loading">Loading...</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <h2 data-i18n="create_wallet">Create wallet</h2>
+        <form id="create-wallet">
+          <input name="name" placeholder="study-wallet" data-i18n-placeholder="wallet_placeholder" required>
+          <button data-i18n="create">Create/load</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2 data-i18n="new_address">New address</h2>
+        <form id="new-address">
+          <input name="wallet" placeholder="study-wallet" data-i18n-placeholder="wallet_placeholder" required>
+          <input name="label" placeholder="label" data-i18n-placeholder="label_placeholder">
+          <button data-i18n="generate">Generate</button>
+        </form>
+      </div>
+
+      <div class="panel wide">
+        <h2 data-i18n="sign_tx">Create and sign transaction</h2>
+        <form id="sign-tx">
+          <input name="wallet" placeholder="study-wallet" data-i18n-placeholder="wallet_placeholder" required>
+          <input name="to_address" placeholder="tb1q..." required>
+          <input name="amount" type="number" step="0.00000001" placeholder="0.0001" required>
+          <button data-i18n="create_sign">Create PSBT and sign</button>
+        </form>
+      </div>
+
+      <div class="panel wide">
+        <h2 data-i18n="result">Result</h2>
+        <pre id="output" data-i18n="ready">Ready.</pre>
+      </div>
+    </section>
+  </main>
+  <script src="/wallet-assets/js/wallet.js?v=20260506-signet-units"></script>
+</body>
+</html>

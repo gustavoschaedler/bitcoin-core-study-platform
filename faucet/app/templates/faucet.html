@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }} · Faucet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% if turnstile_enabled %}
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  {% endif %}
+  <link rel="stylesheet" href="/static/css/home.css">
+</head>
+<body data-default-lang="{{ lang }}">
+  <main class="page">
+    <header class="top">
+      <a class="back" href="/" data-i18n="back_home">← Home</a>
+      <div class="lang">
+        <button data-lang="pt-BR">PT-BR</button>
+        <button data-lang="en-GB">GB-EN</button>
+      </div>
+    </header>
+
+    <section class="hero slim">
+      <div>
+        <div class="badge">Signet faucet</div>
+        <h1 data-i18n="faucet_title">Signet faucet</h1>
+        <p data-i18n="faucet_page_text">Request Signet coins for local transaction and RPC experiments.</p>
+      </div>
+    </section>
+
+    <section class="lab-grid">
+      <div class="panel">
+        <h2 data-i18n="request_coins">Request coins</h2>
+        <p class="muted"><span data-i18n="amount">Amount</span>: <strong>{{ amount }} sBTC</strong>. <span data-i18n="cooldown">Cooldown</span>: <strong>{{ cooldown }}s</strong>.</p>
+        <form id="faucet-form">
+          <label data-i18n="signet_address">Signet address</label>
+          <input name="address" placeholder="tb1q..." autocomplete="off" required>
+          {% if turnstile_enabled %}
+          <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}"></div>
+          {% endif %}
+          <button type="submit" data-i18n="send_coins">Send coins</button>
+        </form>
+        <pre id="result" data-i18n="ready">Ready.</pre>
+      </div>
+
+      <div class="panel">
+        <h2 data-i18n="node_stats">Node stats</h2>
+        <div class="metric"><span data-i18n="blocks">Blocks</span><strong>{{ summary.blocks or "-" }}</strong></div>
+        <div class="metric"><span data-i18n="peers">Peers</span><strong>{{ summary.peers or "-" }}</strong></div>
+        <div class="metric"><span data-i18n="mempool">Mempool</span><strong>{{ summary.mempool or "-" }}</strong></div>
+        <div class="metric"><span data-i18n="balance">Balance</span><strong>{{ summary.wallet_balance_display if summary.wallet_balance is not none else "-" }}</strong></div>
+      </div>
+    </section>
+  </main>
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/faucet.js"></script>
+</body>
+</html>

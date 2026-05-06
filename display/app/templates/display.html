@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <title>Signet Display</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/display.css">
+</head>
+<body data-default-lang="{{ lang }}">
+  <main class="device">
+    <section class="top">
+      <div>
+        <div class="label" data-i18n="node">SIGNET NODE</div>
+        <h1 id="status">{% if s.ok %}ONLINE{% else %}OFFLINE{% endif %}</h1>
+      </div>
+      <div class="led {% if s.ok %}on{% endif %}"></div>
+    </section>
+    <section class="screen">
+      <div class="row"><span data-i18n="chain">CHAIN</span><strong id="chain">{{ s.chain or "-" }}</strong></div>
+      <div class="row"><span data-i18n="block">BLOCK</span><strong id="blocks">{{ s.blocks or "-" }}</strong></div>
+      <div class="row"><span data-i18n="sync">SYNC</span><strong id="sync">{{ s.sync or "-" }}%</strong></div>
+      <div class="row"><span data-i18n="peers">PEERS</span><strong id="peers">{{ s.peers or "-" }}</strong></div>
+      <div class="row"><span>MEMPOOL</span><strong id="mempool">{{ s.mempool or "-" }}</strong></div>
+      <div class="row"><span data-i18n="mempool_bytes">MEM BYTES</span><strong id="mempool_bytes">{{ s.mempool_bytes or "-" }}</strong></div>
+      <div class="row"><span data-i18n="min_fee">MIN FEE</span><strong id="minfee" class="stacked-value"><b>{{ s.minfee_display.btc if s.minfee_display else "-" }}</b><small>{{ s.minfee_display.sats if s.minfee_display else "-" }}</small></strong></div>
+      <div class="row"><span data-i18n="balance">BALANCE</span><strong id="balance" class="stacked-value"><b>{{ s.balance_display.btc if s.balance_display else "-" }}</b><small>{{ s.balance_display.sats if s.balance_display else "-" }}</small></strong></div>
+    </section>
+    <section class="footer">
+      <button class="button" data-lang="pt-BR">PT</button>
+      <button class="button" data-lang="en-GB">EN</button>
+      <div class="button"></div>
+    </section>
+  </main>
+  <script>
+    const translations = {
+      "pt-BR": {node:"NO SIGNET", chain:"REDE", block:"BLOCO", sync:"SINC", peers:"PARES", mempool_bytes:"BYTES MEM", min_fee:"TAXA MIN", balance:"SALDO", online:"ONLINE", offline:"OFFLINE"},
+      "en-GB": {node:"SIGNET NODE", chain:"CHAIN", block:"BLOCK", sync:"SYNC", peers:"PEERS", mempool_bytes:"MEM BYTES", min_fee:"MIN FEE", balance:"BALANCE", online:"ONLINE", offline:"OFFLINE"}
+    };
+    let currentLang = localStorage.getItem("lang") || document.body.dataset.defaultLang || "pt-BR";
+    function tr(key){return translations[currentLang]?.[key] || translations["en-GB"][key] || key}
+    function setLang(lang){
+      currentLang = translations[lang] ? lang : "pt-BR";
+      localStorage.setItem("lang", currentLang);
+      document.documentElement.lang = currentLang;
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const key = el.dataset.i18n;
+        if(translations[currentLang]?.[key]) el.textContent = translations[currentLang][key];
+      });
+      document.querySelectorAll("[data-lang]").forEach((btn) => btn.classList.toggle("active", btn.dataset.lang === currentLang));
+      refresh();
+    }
+    async function refresh(){
+      try{
+        const r=await fetch("/api/status");
+        const s=await r.json();
+        document.getElementById("status").textContent=s.ok?tr("online"):tr("offline");
+        document.querySelector(".led").classList.toggle("on",s.ok);
+        if(!s.ok)return;
+        const values = {chain:s.chain,blocks:s.blocks,sync:s.sync+"%",peers:s.peers,mempool:s.mempool,mempool_bytes:s.mempool_bytes};
+        for(const [id,val] of Object.entries(values)){
+          document.getElementById(id).textContent=val;
+        }
+        document.getElementById("minfee").innerHTML=`<b>${s.minfee_display?.btc ?? "-"}</b><small>${s.minfee_display?.sats ?? "-"}</small>`;
+        document.getElementById("balance").innerHTML=`<b>${s.balance_display?.btc ?? "-"}</b><small>${s.balance_display?.sats ?? "-"}</small>`;
+      }catch(e){}
+    }
+    document.querySelectorAll("[data-lang]").forEach((btn) => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
+    setLang(currentLang);
+    setInterval(refresh,3000);
+  </script>
+</body>
+</html>

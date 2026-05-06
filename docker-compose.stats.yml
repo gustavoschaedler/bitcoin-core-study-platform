@@ -1,0 +1,5 @@
+services:
+  faucet:
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
