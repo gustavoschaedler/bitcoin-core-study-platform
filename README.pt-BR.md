@@ -21,7 +21,7 @@
 
 ```bash
 git clone <este repo>
-cd signet-clean-node-full
+cd bitcoin-core-study-platform
 cp .env.example .env
 # (opcional) edite .env — no mínimo troque BITCOIN_RPC_PASSWORD
 docker compose up -d --build
@@ -37,39 +37,48 @@ Pronto. Você tem um nó Signet `bitcoind` e quatro interfaces web ligadas a ele
 ## 📖 Índice
 
 - [⚡ Signet Core Study Platform](#-signet-core-study-platform)
-- [⚡ TL;DR — Início rápido](#-tldr--início-rápido)
-- [📦 O que vem na caixa](#-o-que-vem-na-caixa)
-- [✅ Pré-requisitos](#-pré-requisitos)
-- [⚙️ Configuração (.env)](#️-configuração-env)
-- [🔐 Autenticação RPC: senha vs cookie](#-autenticação-rpc-senha-vs-cookie)
-- [🚀 Subir a stack](#-subir-a-stack)
-- [🧪 Smoke test](#-smoke-test)
-- [🗂️ Estrutura do projeto](#️-estrutura-do-projeto)
-- [🌐 Hub web (porta 8080)](#-hub-web-porta-8080)
-- [🖥️ Display HDMI (porta 8181)](#️-display-hdmi-porta-8181)
-- [⛏️ Terminal Bitcoin Core (porta 8182)](#️-terminal-bitcoin-core-porta-8182)
-- [🔌 Portas](#-portas)
-- [🛡️ Arquitetura de rede](#️-arquitetura-de-rede)
-- [🔒 Hardening de segurança](#-hardening-de-segurança)
-- [📊 Painel de container stats (opt-in)](#-painel-de-container-stats-opt-in)
-- [💧 Wallet do faucet — fundos](#-wallet-do-faucet--fundos)
-- [🛠️ Scripts CLI](#️-scripts-cli)
-- [💾 Persistência e reset](#-persistência-e-reset)
-- [🔧 Troubleshooting](#-troubleshooting)
-- [📚 Referências](#-referências)
+    - [Laboratório completo de Bitcoin Core para estudo — nó, faucet, mempool, assinatura de carteira, dashboard HDMI e terminal `bitcoin-cli` no navegador, tudo em Signet.](#laboratório-completo-de-bitcoin-core-para-estudo--nó-faucet-mempool-assinatura-de-carteira-dashboard-hdmi-e-terminal-bitcoin-cli-no-navegador-tudo-em-signet)
+  - [⚡ TL;DR — Início rápido](#-tldr--início-rápido)
+  - [📖 Índice](#-índice)
+  - [📦 O que vem na caixa](#-o-que-vem-na-caixa)
+  - [✅ Pré-requisitos](#-pré-requisitos)
+  - [⚙️ Configuração (.env)](#️-configuração-env)
+  - [🔐 Autenticação RPC: senha vs cookie](#-autenticação-rpc-senha-vs-cookie)
+    - [`password` (padrão)](#password-padrão)
+    - [`cookie`](#cookie)
+  - [🚀 Subir a stack](#-subir-a-stack)
+  - [🧪 Smoke test](#-smoke-test)
+  - [🗂️ Estrutura do projeto](#️-estrutura-do-projeto)
+  - [🌐 Hub web (porta 8080)](#-hub-web-porta-8080)
+    - [Páginas](#páginas)
+    - [Superfície de API](#superfície-de-api)
+  - [🖥️ Display HDMI (porta 8181)](#️-display-hdmi-porta-8181)
+  - [⛏️ Terminal Bitcoin Core (porta 8182)](#️-terminal-bitcoin-core-porta-8182)
+    - [O que tem dentro](#o-que-tem-dentro)
+    - [Como conversa com o nó](#como-conversa-com-o-nó)
+    - [Hardening](#hardening)
+  - [🔌 Portas](#-portas)
+  - [🛡️ Arquitetura de rede](#️-arquitetura-de-rede)
+  - [🔒 Hardening de segurança](#-hardening-de-segurança)
+  - [📊 Painel de container stats (opt-in)](#-painel-de-container-stats-opt-in)
+  - [💧 Wallet do faucet — fundos](#-wallet-do-faucet--fundos)
+  - [🛠️ Scripts CLI](#️-scripts-cli)
+  - [💾 Persistência e reset](#-persistência-e-reset)
+  - [🔧 Troubleshooting](#-troubleshooting)
+  - [📚 Referências](#-referências)
 
 ---
 
 ## 📦 O que vem na caixa
 
-| Serviço             | Container                  | Imagem / build           | O que faz                                                         |
-| ------------------- | -------------------------- | ------------------------ | ----------------------------------------------------------------- |
-| **bitcoind**        | `signet-bitcoind`          | `bitcoin/bitcoin:29`     | Nó completo em Signet, JSON-RPC :38332, ZMQ :28332-28335          |
-| **redis**           | `signet-redis`             | `redis:8-alpine`         | Cache + rate limit + histórico do faucet                          |
-| **web**             | `signet-web`               | `apps/web` (FastAPI)     | Home, faucet, mempool, wallet lab, container stats, docs          |
-| **display**         | `signet-display`           | `apps/display` (FastAPI) | Dashboard HDMI/kiosk                                              |
-| **terminal-webui**  | `signet-terminal-webui`    | `apps/terminal` (FastAPI + `bitcoin-cli`) | Sandbox que roda `bitcoin-cli` / RPC pelo navegador |
-| **terminal-proxy**  | `signet-terminal-proxy`    | `nginx:1.30-alpine`      | Proxy reverso endurecido na frente do `terminal-webui`            |
+| Serviço            | Container               | Imagem / build                            | O que faz                                                |
+| ------------------ | ----------------------- | ----------------------------------------- | -------------------------------------------------------- |
+| **bitcoind**       | `signet-bitcoind`       | `bitcoin/bitcoin:29`                      | Nó completo em Signet, JSON-RPC :38332, ZMQ :28332-28335 |
+| **redis**          | `signet-redis`          | `redis:8-alpine`                          | Cache + rate limit + histórico do faucet                 |
+| **web**            | `signet-web`            | `apps/web` (FastAPI)                      | Home, faucet, mempool, wallet lab, container stats, docs |
+| **display**        | `signet-display`        | `apps/display` (FastAPI)                  | Dashboard HDMI/kiosk                                     |
+| **terminal-webui** | `signet-terminal-webui` | `apps/terminal` (FastAPI + `bitcoin-cli`) | Sandbox que roda `bitcoin-cli` / RPC pelo navegador      |
+| **terminal-proxy** | `signet-terminal-proxy` | `nginx:1.30-alpine`                       | Proxy reverso endurecido na frente do `terminal-webui`   |
 
 Tudo via Docker; nada para instalar no host além do próprio Docker.
 
@@ -98,22 +107,22 @@ cp .env.example .env
 
 Variáveis principais (lista completa em [`.env.example`](.env.example)):
 
-| Variável                       | Para quê                                                                 |
-| ------------------------------ | ------------------------------------------------------------------------ |
-| `APP_TITLE` · `DEFAULT_LANG`   | Branding e idioma padrão (`pt-BR` ou `en-GB`).                           |
-| `BITCOIN_REPO` · `BITCOIN_VERSION` | Tag da imagem do Bitcoin Core (usada por `bitcoind` e pelo terminal).|
-| `PYTHON_IMAGE` · `NGINX_IMAGE` | Imagens base dos apps FastAPI e do proxy do terminal.                    |
-| `BITCOIN_RPC_AUTH_MODE`        | `password` (padrão) ou `cookie` — veja a próxima seção.                  |
-| `BITCOIN_RPC_USER` · `BITCOIN_RPC_PASSWORD` | Credenciais no modo password.                               |
-| `BITCOIN_RPC_COOKIE_FILE`      | Caminho do cookie dentro dos containers (default já funciona).           |
-| `BITCOIN_RPC_URL`              | URL RPC interna, default `http://bitcoind:38332`.                        |
-| `FAUCET_*` · `MAX_WALLET_SEND_BTC` | Limites do faucet e teto do laboratório de assinatura.               |
-| `TURNSTILE_*`                  | CAPTCHA opcional do Cloudflare Turnstile no faucet.                      |
-| `BASIC_AUTH_USERNAME` · `BASIC_AUTH_PASSWORD` | HTTP Basic auth opcional cobrindo todas as superfícies.   |
-| `TRUST_PROXY_HEADERS`          | Aceitar `X-Forwarded-For` (somente atrás de proxy de confiança).         |
-| `TERMINAL_HOST_PORT`           | Porta do host para o proxy do terminal (default `8182`).                 |
-| `SEARCH_RATE_PER_MIN` · `MEMPOOL_DETAIL_RATE_PER_MIN` | Rate limit por IP.                                |
-| `ENABLE_CONTAINER_STATS`       | Mostra CPU/memória/disco dos containers (precisa do override).           |
+| Variável                                              | Para quê                                                              |
+| ----------------------------------------------------- | --------------------------------------------------------------------- |
+| `APP_TITLE` · `DEFAULT_LANG`                          | Branding e idioma padrão (`pt-BR` ou `en-GB`).                        |
+| `BITCOIN_REPO` · `BITCOIN_VERSION`                    | Tag da imagem do Bitcoin Core (usada por `bitcoind` e pelo terminal). |
+| `PYTHON_IMAGE` · `NGINX_IMAGE`                        | Imagens base dos apps FastAPI e do proxy do terminal.                 |
+| `BITCOIN_RPC_AUTH_MODE`                               | `password` (padrão) ou `cookie` — veja a próxima seção.               |
+| `BITCOIN_RPC_USER` · `BITCOIN_RPC_PASSWORD`           | Credenciais no modo password.                                         |
+| `BITCOIN_RPC_COOKIE_FILE`                             | Caminho do cookie dentro dos containers (default já funciona).        |
+| `BITCOIN_RPC_URL`                                     | URL RPC interna, default `http://bitcoind:38332`.                     |
+| `FAUCET_*` · `MAX_WALLET_SEND_BTC`                    | Limites do faucet e teto do laboratório de assinatura.                |
+| `TURNSTILE_*`                                         | CAPTCHA opcional do Cloudflare Turnstile no faucet.                   |
+| `BASIC_AUTH_USERNAME` · `BASIC_AUTH_PASSWORD`         | HTTP Basic auth opcional cobrindo todas as superfícies.               |
+| `TRUST_PROXY_HEADERS`                                 | Aceitar `X-Forwarded-For` (somente atrás de proxy de confiança).      |
+| `TERMINAL_HOST_PORT`                                  | Porta do host para o proxy do terminal (default `8182`).              |
+| `SEARCH_RATE_PER_MIN` · `MEMPOOL_DETAIL_RATE_PER_MIN` | Rate limit por IP.                                                    |
+| `ENABLE_CONTAINER_STATS`                              | Mostra CPU/memória/disco dos containers (precisa do override).        |
 
 > [!IMPORTANT]
 > Não comite `.env`. O `.gitignore` já protege.
@@ -190,7 +199,7 @@ docker exec signet-bitcoind bitcoin-cli -signet \
 ## 🗂️ Estrutura do projeto
 
 ```text
-signet-clean-node-full/
+bitcoin-core-study-platform/
 ├── apps/
 │   ├── web/                       Hub FastAPI (porta 8080)
 │   │   ├── Dockerfile
@@ -239,48 +248,48 @@ App único FastAPI que serve cada página + API do laboratório.
 
 ### Páginas
 
-| Path           | O que aparece                                                               |
-| -------------- | --------------------------------------------------------------------------- |
-| `/`            | Home — status do nó + cards para cada superfície.                            |
-| `/faucet`      | Solicitação de sBTC; rate limit por IP e por endereço.                       |
-| `/mempool`     | Explorador inspirado no mempool.space (HTML/CSS/JS puro).                    |
-| `/wallet`      | Lab de carteira: criar/carregar/excluir wallets, gerar endereços, assinar PSBT. |
-| `/stats`       | Estatísticas dos containers (CPU/mem/disco/rede), opt-in.                    |
-| `/study-docs`  | Notas locais de Bitcoin Core / RPC / ZMQ / wallet em `docs/`.                |
+| Path          | O que aparece                                                                   |
+| ------------- | ------------------------------------------------------------------------------- |
+| `/`           | Home — status do nó + cards para cada superfície.                               |
+| `/faucet`     | Solicitação de sBTC; rate limit por IP e por endereço.                          |
+| `/mempool`    | Explorador inspirado no mempool.space (HTML/CSS/JS puro).                       |
+| `/wallet`     | Lab de carteira: criar/carregar/excluir wallets, gerar endereços, assinar PSBT. |
+| `/stats`      | Estatísticas dos containers (CPU/mem/disco/rede), opt-in.                       |
+| `/study-docs` | Notas locais de Bitcoin Core / RPC / ZMQ / wallet em `docs/`.                   |
 
 ### Superfície de API
 
 Endpoints de leitura (timeout curto, com rate limit):
 
-| Método | Path                                  | Para quê                                                    |
-| ------ | ------------------------------------- | ----------------------------------------------------------- |
-| `GET`  | `/api/status`                         | Snapshot para a home / faucet.                              |
-| `GET`  | `/api/zmq`                            | `getzmqnotifications`.                                      |
-| `GET`  | `/api/rpc-help?command=...`           | `help <command>` (nome validado).                           |
-| `GET`  | `/api/blocks/recent?limit=N`          | Blocos minerados recentes com fee stats.                     |
-| `GET`  | `/api/blocks/{height}/txs`            | Detalhe de bloco minerado.                                   |
-| `GET`  | `/api/mempool` · `/api/mempool/raw`   | `getmempoolinfo`, `getrawmempool`.                          |
-| `GET`  | `/api/mempool/txs?limit=N`            | Lista de TXs do mempool com endereços, fees, blocos projetados. |
-| `GET`  | `/api/mempool/tx/{txid}`              | Detalhe completo da TX (rate-limited).                      |
-| `GET`  | `/api/mempool/blocks`                 | Resumo de blocos projetados (buckets de fee).               |
-| `GET`  | `/api/mempool/projected-block/{n}`    | Detalhe de cada bloco projetado (rate-limited).             |
-| `GET`  | `/api/search/address/{addr}`          | Visão de um endereço, cache 60s, rate-limited por IP.       |
-| `GET`  | `/api/history`                        | Últimos envios do faucet.                                    |
-| `GET`  | `/api/wallet/list` · `/api/wallet/overview` | Wallets carregadas + saldos/endereços.                |
-| `GET`  | `/api/container-stats`                | Stats dos containers (`ENABLE_CONTAINER_STATS=true`).       |
+| Método | Path                                        | Para quê                                                        |
+| ------ | ------------------------------------------- | --------------------------------------------------------------- |
+| `GET`  | `/api/status`                               | Snapshot para a home / faucet.                                  |
+| `GET`  | `/api/zmq`                                  | `getzmqnotifications`.                                          |
+| `GET`  | `/api/rpc-help?command=...`                 | `help <command>` (nome validado).                               |
+| `GET`  | `/api/blocks/recent?limit=N`                | Blocos minerados recentes com fee stats.                        |
+| `GET`  | `/api/blocks/{height}/txs`                  | Detalhe de bloco minerado.                                      |
+| `GET`  | `/api/mempool` · `/api/mempool/raw`         | `getmempoolinfo`, `getrawmempool`.                              |
+| `GET`  | `/api/mempool/txs?limit=N`                  | Lista de TXs do mempool com endereços, fees, blocos projetados. |
+| `GET`  | `/api/mempool/tx/{txid}`                    | Detalhe completo da TX (rate-limited).                          |
+| `GET`  | `/api/mempool/blocks`                       | Resumo de blocos projetados (buckets de fee).                   |
+| `GET`  | `/api/mempool/projected-block/{n}`          | Detalhe de cada bloco projetado (rate-limited).                 |
+| `GET`  | `/api/search/address/{addr}`                | Visão de um endereço, cache 60s, rate-limited por IP.           |
+| `GET`  | `/api/history`                              | Últimos envios do faucet.                                       |
+| `GET`  | `/api/wallet/list` · `/api/wallet/overview` | Wallets carregadas + saldos/endereços.                          |
+| `GET`  | `/api/container-stats`                      | Stats dos containers (`ENABLE_CONTAINER_STATS=true`).           |
 
 Endpoints de escrita (timeout maior):
 
-| Método | Path                          | Para quê                                          |
-| ------ | ----------------------------- | ------------------------------------------------- |
-| `POST` | `/api/request`                | Envio do faucet.                                  |
-| `POST` | `/api/wallet/create`          | Cria ou carrega uma wallet.                        |
-| `POST` | `/api/wallet/create-faucet`   | Cria a wallet do faucet + retorna um endereço.     |
-| `POST` | `/api/wallet/load`            | Carrega uma wallet existente.                      |
-| `POST` | `/api/wallet/delete`          | Exclui (precisa estar com saldo zero).             |
-| `POST` | `/api/wallet/address`         | Novo endereço de recebimento.                      |
-| `POST` | `/api/wallet/sign`            | Constrói + assina um PSBT (NÃO faz broadcast).     |
-| `POST` | `/api/wallet/broadcast`       | `sendrawtransaction` para um hex assinado.         |
+| Método | Path                        | Para quê                                       |
+| ------ | --------------------------- | ---------------------------------------------- |
+| `POST` | `/api/request`              | Envio do faucet.                               |
+| `POST` | `/api/wallet/create`        | Cria ou carrega uma wallet.                    |
+| `POST` | `/api/wallet/create-faucet` | Cria a wallet do faucet + retorna um endereço. |
+| `POST` | `/api/wallet/load`          | Carrega uma wallet existente.                  |
+| `POST` | `/api/wallet/delete`        | Exclui (precisa estar com saldo zero).         |
+| `POST` | `/api/wallet/address`       | Novo endereço de recebimento.                  |
+| `POST` | `/api/wallet/sign`          | Constrói + assina um PSBT (NÃO faz broadcast). |
+| `POST` | `/api/wallet/broadcast`     | `sendrawtransaction` para um hex assinado.     |
 
 > [!CAUTION]
 > Os endpoints de wallet foram desenhados para um **lab em `127.0.0.1`**. Se publicar a stack, proteja com `BASIC_AUTH_USERNAME` / `BASIC_AUTH_PASSWORD` (ou um proxy reverso real com autenticação) — não há auth por endpoint.
@@ -344,15 +353,15 @@ O container `terminal-webui` roda como `sandbox` (uid 1000), `read_only: true`, 
 
 ## 🔌 Portas
 
-| Escopo                     | Endereço                               | Observação                          |
-| -------------------------- | -------------------------------------- | ----------------------------------- |
-| Hub web                    | `127.0.0.1:8080` → `web`               | Faucet, mempool, wallet, stats.     |
-| Display HDMI               | `127.0.0.1:8181` → `display`           | Dashboard kiosk.                    |
-| Terminal Bitcoin Core      | `127.0.0.1:8182` → nginx → terminal    | Sandbox `bitcoin-cli` no navegador. |
-| RPC (interno)              | `bitcoind:38332`                       | Não publicado no host.              |
-| P2P (interno)              | `bitcoind:38333`                       | Não publicado.                      |
-| ZMQ (interno)              | `bitcoind:28332..28335`                | Não publicado.                      |
-| Redis (interno)            | `redis:6379`                           | Não publicado.                      |
+| Escopo                | Endereço                            | Observação                          |
+| --------------------- | ----------------------------------- | ----------------------------------- |
+| Hub web               | `127.0.0.1:8080` → `web`            | Faucet, mempool, wallet, stats.     |
+| Display HDMI          | `127.0.0.1:8181` → `display`        | Dashboard kiosk.                    |
+| Terminal Bitcoin Core | `127.0.0.1:8182` → nginx → terminal | Sandbox `bitcoin-cli` no navegador. |
+| RPC (interno)         | `bitcoind:38332`                    | Não publicado no host.              |
+| P2P (interno)         | `bitcoind:38333`                    | Não publicado.                      |
+| ZMQ (interno)         | `bitcoind:28332..28335`             | Não publicado.                      |
+| Redis (interno)       | `redis:6379`                        | Não publicado.                      |
 
 ---
 
@@ -441,15 +450,15 @@ Mande sBTC de um faucet Signet público (ex.: <https://signetfaucet.com/>) para 
 
 Todos chamam `bitcoin-cli` dentro do `signet-bitcoind`, escolhendo automaticamente o modo de auth conforme `BITCOIN_RPC_AUTH_MODE`.
 
-| Script                          | O que faz                                                         |
-| ------------------------------- | ----------------------------------------------------------------- |
-| [`scripts/common.sh`](scripts/common.sh)         | Helper interno usado pelos demais.            |
+| Script                                             | O que faz                                    |
+| -------------------------------------------------- | -------------------------------------------- |
+| [`scripts/common.sh`](scripts/common.sh)           | Helper interno usado pelos demais.           |
 | [`scripts/bitcoin-cli.sh`](scripts/bitcoin-cli.sh) | Roda qualquer `bitcoin-cli ...` no nó.       |
 | [`scripts/init-wallet.sh`](scripts/init-wallet.sh) | Carrega ou cria a wallet do faucet.          |
-| [`scripts/status.sh`](scripts/status.sh)         | Blockchain / rede / mempool / ZMQ / faucet.   |
-| [`scripts/mempool.sh`](scripts/mempool.sh)       | `getmempoolinfo` e a lista raw do mempool.    |
-| [`scripts/new-address.sh`](scripts/new-address.sh) | Novo endereço de recebimento na wallet.    |
-| [`scripts/send-test.sh`](scripts/send-test.sh)   | `./scripts/send-test.sh <endereço> <valor>`.  |
+| [`scripts/status.sh`](scripts/status.sh)           | Blockchain / rede / mempool / ZMQ / faucet.  |
+| [`scripts/mempool.sh`](scripts/mempool.sh)         | `getmempoolinfo` e a lista raw do mempool.   |
+| [`scripts/new-address.sh`](scripts/new-address.sh) | Novo endereço de recebimento na wallet.      |
+| [`scripts/send-test.sh`](scripts/send-test.sh)     | `./scripts/send-test.sh <endereço> <valor>`. |
 
 ---
 
