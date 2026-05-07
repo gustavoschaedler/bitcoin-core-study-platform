@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/css/mempool.css?v=20260507-tx-edges-dyn-3">
+</head>
+<body data-default-lang="{{ lang }}">
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="mark">₿</span>
+      <span class="brand-copy">
+        <strong>Signet</strong>
+        <small>mempool</small>
+      </span>
+    </a>
+    <nav aria-label="Primary">
+      <a href="/" data-i18n="home">Home</a>
+      <a class="active" href="/mempool" data-i18n="mempool">Mempool</a>
+      <a href="/faucet" data-i18n="faucet">Faucet</a>
+      <a href="/wallet" data-i18n="wallet">Wallet lab</a>
+      <a href="/stats" data-i18n="stats">Stats</a>
+    </nav>
+    <form class="node-search" id="node-search" role="search" autocomplete="off">
+      <span class="search-mark" aria-hidden="true"></span>
+      <input id="node-search-input" type="search" data-i18n-placeholder="search_placeholder" placeholder="Search transaction, block, hash or node metric">
+      <button type="submit" data-i18n="search_button">Search</button>
+      <div class="search-results" id="node-search-results" hidden></div>
+    </form>
+    <div class="top-actions">
+      <span id="updated" aria-live="polite">-</span>
+      <button id="refresh" data-i18n="refresh">Refresh</button>
+      <div class="lang">
+        <button data-lang="pt-BR">PT-BR</button>
+        <button data-lang="en-GB">GB-EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Signet</p>
+        <h1 data-i18n="page_title">Mempool monitor</h1>
+        <p data-i18n="subtitle">Live Signet mempool, fee buckets and projected blocks.</p>
+      </div>
+      <div class="hero-status">
+        <span data-i18n="transactions">Transactions</span>
+        <strong id="tx-count">-</strong>
+        <small data-i18n="in_mempool">in mempool</small>
+      </div>
+    </section>
+
+      <section class="status-strip" aria-label="Node status">
+        <div><span data-i18n="chain">Chain</span><strong id="chain">-</strong></div>
+        <div><span data-i18n="block_height">Block height</span><strong id="blocks-height">-</strong></div>
+        <div><span data-i18n="sync">Sync</span><strong id="sync">-</strong></div>
+        <div><span data-i18n="peers">Peers</span><strong id="peers">-</strong></div>
+        <div><span data-i18n="headers">Headers</span><strong id="headers">-</strong></div>
+        <div><span data-i18n="mempool_bytes">Mempool bytes</span><strong id="bytes">-</strong></div>
+        <div><span data-i18n="memory_usage">Memory usage</span><strong id="usage">-</strong></div>
+        <div><span data-i18n="min_fee">Min fee</span><strong id="minfee">-</strong></div>
+      </section>
+
+      <section class="blocks-split">
+        <div class="blocks-panel">
+          <div class="section-title">
+            <div class="title-line">
+              <h2 data-i18n="projected_blocks">Projected blocks</h2>
+              <strong class="block-count" id="projected-block-count">0</strong>
+            </div>
+            <span data-i18n="projected_hint">Approximation from local mempool fee order</span>
+          </div>
+          <div class="block-row projected" id="blocks">
+            <div class="loading">Loading blocks...</div>
+          </div>
+        </div>
+        <div class="blocks-panel mined-panel">
+          <div class="section-title">
+            <div class="title-line">
+              <h2 data-i18n="mined_blocks">Mined blocks</h2>
+              <strong class="block-count" id="mined-block-count">0</strong>
+            </div>
+            <span id="tip-height">-</span>
+          </div>
+          <div class="block-row mined" id="mined-blocks">
+            <div class="loading">Loading blocks...</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="summary-grid">
+        <div class="summary-card red">
+          <span data-i18n="high">High priority</span>
+          <strong id="fee-high">-</strong>
+          <small>s-sats/vB</small>
+        </div>
+        <div class="summary-card orange">
+          <span data-i18n="medium">Medium priority</span>
+          <strong id="fee-medium">-</strong>
+          <small>s-sats/vB</small>
+        </div>
+        <div class="summary-card green">
+          <span data-i18n="low">Low priority</span>
+          <strong id="fee-low">-</strong>
+          <small>s-sats/vB</small>
+        </div>
+        <div class="summary-card blue">
+          <span data-i18n="mempool_bytes">Mempool bytes</span>
+          <strong id="bytes-card">-</strong>
+          <small>bytes</small>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <div class="panel">
+          <div class="panel-title">
+            <h2 data-i18n="latest_transactions">Latest transactions</h2>
+            <span id="tx-note">Signet</span>
+          </div>
+          <div class="table-head">
+            <span>TXID</span>
+            <span data-i18n="tx_projected_block">Projected block</span>
+            <span data-i18n="fee_rate">Fee rate</span>
+            <span data-i18n="size">Size</span>
+            <span data-i18n="output">Output</span>
+          </div>
+          <div id="tx-list" class="tx-list">
+            <div class="empty">Loading transactions...</div>
+          </div>
+          <div class="pagination">
+            <button id="tx-prev" type="button" data-i18n="previous">Previous</button>
+            <span id="tx-page">-</span>
+            <button id="tx-next" type="button" data-i18n="next">Next</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  <div class="tx-modal" id="tx-modal" hidden>
+    <div class="tx-modal-backdrop" data-close-tx></div>
+    <article class="tx-detail" role="dialog" aria-modal="true" aria-labelledby="tx-detail-title">
+      <header class="tx-detail-head">
+        <div>
+          <span class="detail-kicker" data-i18n="transaction">Transaction</span>
+          <h2 id="tx-detail-title">TXID</h2>
+        </div>
+        <button class="close-detail" type="button" data-close-tx data-i18n="close">Close</button>
+      </header>
+      <div id="tx-detail-body" class="tx-detail-body">
+        <div class="empty">Loading transaction...</div>
+      </div>
+    </article>
+  </div>
+  <div class="tx-modal" id="address-modal" hidden>
+    <div class="tx-modal-backdrop" data-close-address></div>
+    <article class="tx-detail address-detail" role="dialog" aria-modal="true" aria-labelledby="address-detail-title">
+      <header class="tx-detail-head">
+        <div>
+          <span class="detail-kicker" data-i18n="address">Address</span>
+          <h2 id="address-detail-title">Address</h2>
+        </div>
+        <button class="close-detail" type="button" data-close-address data-i18n="close">Close</button>
+      </header>
+      <div id="address-detail-body" class="tx-detail-body">
+        <div class="empty">Loading...</div>
+      </div>
+    </article>
+  </div>
+  <div class="tx-modal" id="block-modal" hidden>
+    <div class="tx-modal-backdrop" data-close-block></div>
+    <article class="tx-detail block-detail" role="dialog" aria-modal="true" aria-labelledby="block-detail-title">
+      <header class="tx-detail-head">
+        <div>
+          <span class="detail-kicker" data-i18n="block_transactions">Block transactions</span>
+          <h2 id="block-detail-title">Block</h2>
+        </div>
+        <button class="close-detail" type="button" data-close-block data-i18n="close">Close</button>
+      </header>
+      <div id="block-detail-body" class="tx-detail-body">
+        <div class="empty">Loading...</div>
+      </div>
+    </article>
+  </div>
+  <script src="/static/js/mempool.js?v=20260507-tx-edges-dyn-3"></script>
+</body>
+</html>

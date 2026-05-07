@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/css/wallet.css?v=20260507-tx-edges-dyn-3">
+</head>
+<body data-default-lang="{{ lang }}" data-faucet-wallet="{{ faucet_wallet_name }}">
+  <main class="page">
+    <header>
+      <a href="/" data-i18n="back_home">← Home</a>
+      <h1 data-i18n="title">Wallet and signing lab</h1>
+      <div class="settings-menu">
+        <button id="settings-toggle" class="icon-button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 1 1.5h.1a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a2 2 0 1 1 0 4H21a1.6 1.6 0 0 0-1.6 1Z"/></svg>
+        </button>
+        <div id="settings-popover" class="settings-popover" hidden>
+          <span data-i18n="language">Language</span>
+          <button data-lang="pt-BR">PT-BR</button>
+          <button data-lang="en-GB">GB-EN</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="wallets-panel">
+      <div class="panel-title">
+        <h2 data-i18n="wallets">Existing wallets</h2>
+        <button id="refresh-wallets" type="button" data-i18n="refresh">Refresh</button>
+      </div>
+      <div id="wallets-list" class="wallets-list">
+        <div class="empty" data-i18n="loading">Loading...</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <h2 data-i18n="create_wallet">Create wallet</h2>
+        <form id="create-wallet">
+          <input name="name" placeholder="study-wallet" data-i18n-placeholder="wallet_placeholder" required>
+          <button data-i18n="create">Create/load</button>
+        </form>
+        <button id="create-faucet-wallet" class="secondary-action" type="button" data-i18n="create_faucet_wallet">Create faucet wallet</button>
+      </div>
+
+      <div class="panel">
+        <h2 data-i18n="new_address">New address</h2>
+        <form id="new-address">
+          <select name="wallet" id="new-address-wallet" required>
+            <option value="" data-i18n="select_wallet">Select wallet</option>
+          </select>
+          <input name="label" placeholder="label" data-i18n-placeholder="label_placeholder">
+          <button data-i18n="generate">Generate</button>
+        </form>
+      </div>
+
+      <div class="panel wide">
+        <h2 data-i18n="sign_tx">Create and sign transaction</h2>
+        <form id="sign-tx">
+          <input name="wallet" placeholder="study-wallet" data-i18n-placeholder="wallet_placeholder" required>
+          <input name="to_address" placeholder="tb1q..." required>
+          <input name="amount" type="number" step="0.00000001" placeholder="0.0001" required>
+          <button data-i18n="create_sign">Create PSBT and sign</button>
+        </form>
+      </div>
+
+      <div class="panel wide">
+        <h2 data-i18n="result">Result</h2>
+        <pre id="output" data-i18n="ready">Ready.</pre>
+      </div>
+    </section>
+  </main>
+
+  <section id="delete-modal" class="confirm-modal" hidden>
+    <div class="confirm-backdrop" data-close-delete></div>
+    <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+      <span class="confirm-kicker" data-i18n="delete_wallet">Delete</span>
+      <h2 id="delete-title" data-i18n="delete_title">Delete wallet?</h2>
+      <p id="delete-message"></p>
+      <div class="confirm-actions">
+        <button id="cancel-delete" type="button" data-i18n="cancel">Cancel</button>
+        <button id="confirm-delete" class="danger-action" type="button" data-i18n="confirm_delete">Delete wallet</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="/static/js/wallet.js?v=20260507-tx-edges-dyn-3"></script>
+</body>
+</html>

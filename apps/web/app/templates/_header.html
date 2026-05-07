@@ -1,0 +1,43 @@
+<header class="topbar">
+  <a class="brand" href="/">
+    <span class="mark">₿</span>
+    <span class="brand-copy">
+      <strong>Signet</strong>
+      <small data-i18n="brand_subtitle">Core study platform</small>
+    </span>
+  </a>
+  <nav class="primary-nav" aria-label="Primary">
+    <a href="/" data-i18n="home" class="{% if current_page == 'home' %}active{% endif %}">Home</a>
+    <a href="/faucet" data-i18n="faucet" class="{% if current_page == 'faucet' %}active{% endif %}">Faucet</a>
+    <a href="/mempool" data-i18n="mempool" class="{% if current_page == 'mempool' %}active{% endif %}">Mempool</a>
+    <a href="/wallet" data-i18n="wallet" class="{% if current_page == 'wallet' %}active{% endif %}">Wallet</a>
+    <a href="/stats" data-i18n="stats" class="{% if current_page == 'stats' %}active{% endif %}">Stats</a>
+    <a href="/study-docs" data-i18n="docs" class="{% if current_page == 'docs' %}active{% endif %}">Docs</a>
+    <a id="header-display-link" href="http://localhost:8181" target="_blank" rel="noopener" data-i18n="display_nav">Display</a>
+    <a id="header-terminal-link" href="http://localhost:8182" target="_blank" rel="noopener" data-i18n="terminal_nav">Terminal</a>
+  </nav>
+  {% if show_search %}
+  <form class="node-search" id="node-search" role="search" autocomplete="off">
+    <span class="search-mark" aria-hidden="true"></span>
+    <input id="node-search-input" type="search" data-i18n-placeholder="search_placeholder" placeholder="Search transaction, block, hash or node metric">
+    <button type="submit" data-i18n="search_button">Search</button>
+    <div class="search-results" id="node-search-results" hidden></div>
+  </form>
+  {% endif %}
+  <div class="top-actions">
+    <div class="last-refresh" aria-live="polite">
+      <span data-i18n="last_refresh">Last refresh</span>
+      <strong id="updated">-</strong>
+    </div>
+    <div class="settings-menu">
+      <button id="settings-toggle" class="icon-button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 1 1.5h.1a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a2 2 0 1 1 0 4H21a1.6 1.6 0 0 0-1.6 1Z"/></svg>
+      </button>
+      <div id="settings-popover" class="settings-popover" hidden>
+        <span data-i18n="language">Language</span>
+        <button data-lang="pt-BR">PT-BR</button>
+        <button data-lang="en-GB">GB-EN</button>
+      </div>
+    </div>
+  </div>
+</header>

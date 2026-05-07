@@ -1,212 +1,525 @@
-# Signet Core Study Platform
+<div align="center">
 
-Plataforma local de estudos do Bitcoin Core em Signet. O projeto reúne nó Bitcoin Core, faucet, explorador de mempool, laboratório de carteira/assinatura, estatísticas opcionais de containers e dashboard HDMI.
+# ⚡ Signet Core Study Platform
 
-## Requisitos
+### Laboratório completo de Bitcoin Core para estudo — nó, faucet, mempool, assinatura de carteira, dashboard HDMI e terminal `bitcoin-cli` no navegador, tudo em Signet.
 
-- Docker e Docker Compose.
-- Imagem base Python `3.14-slim` definida no `Dockerfile`.
-- Dependências Python com versões fixas no `requirements.txt`.
-- 4 GB de RAM livres recomendados.
-- Portas locais `8080` e `8181` disponíveis.
+[![Bitcoin Core](https://img.shields.io/badge/Bitcoin%20Core-29-F7931A?logo=bitcoin&logoColor=white)](https://bitcoincore.org/)
+[![Docker](https://img.shields.io/badge/Docker%20Compose-ready-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+[![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.136-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Redis](https://img.shields.io/badge/Redis-8-DC382D?logo=redis&logoColor=white)](https://redis.io/)
+[![nginx](https://img.shields.io/badge/nginx-1.30--alpine-009639?logo=nginx&logoColor=white)](https://nginx.org/)
 
-## Estrutura
+[🇬🇧 English](README.md) · **🇧🇷 Português**
 
-```text
-.
-├── bitcoin/              # Configuração do Bitcoin Core Signet
-├── faucet/               # App FastAPI principal e APIs
-├── mempool-ui/           # Interface de mempool em HTML/CSS/JS
-├── wallet-lab/           # Laboratório de carteira, PSBT e assinatura
-├── container-stats/      # UI de estatísticas de containers
-├── display/              # Dashboard HDMI/kiosk
-├── scripts/              # Helpers para bitcoin-cli
-├── systemd/              # Serviço opcional de kiosk
-└── docs/                 # Notas de estudo
+</div>
+
+---
+
+## ⚡ TL;DR — Início rápido
+
+```bash
+git clone <este repo>
+cd signet-clean-node-full
+cp .env.example .env
+# (opcional) edite .env — no mínimo troque BITCOIN_RPC_PASSWORD
+docker compose up -d --build
+chmod +x scripts/*.sh
+./scripts/init-wallet.sh         # cria a wallet do faucet e imprime um endereço
+open http://localhost:8080       # hub: faucet, mempool, wallet lab, stats, docs
 ```
 
-## Instalação
+Pronto. Você tem um nó Signet `bitcoind` e quatro interfaces web ligadas a ele.
 
-1. Copie o arquivo de ambiente:
+---
+
+## 📖 Índice
+
+- [⚡ Signet Core Study Platform](#-signet-core-study-platform)
+- [⚡ TL;DR — Início rápido](#-tldr--início-rápido)
+- [📦 O que vem na caixa](#-o-que-vem-na-caixa)
+- [✅ Pré-requisitos](#-pré-requisitos)
+- [⚙️ Configuração (.env)](#️-configuração-env)
+- [🔐 Autenticação RPC: senha vs cookie](#-autenticação-rpc-senha-vs-cookie)
+- [🚀 Subir a stack](#-subir-a-stack)
+- [🧪 Smoke test](#-smoke-test)
+- [🗂️ Estrutura do projeto](#️-estrutura-do-projeto)
+- [🌐 Hub web (porta 8080)](#-hub-web-porta-8080)
+- [🖥️ Display HDMI (porta 8181)](#️-display-hdmi-porta-8181)
+- [⛏️ Terminal Bitcoin Core (porta 8182)](#️-terminal-bitcoin-core-porta-8182)
+- [🔌 Portas](#-portas)
+- [🛡️ Arquitetura de rede](#️-arquitetura-de-rede)
+- [🔒 Hardening de segurança](#-hardening-de-segurança)
+- [📊 Painel de container stats (opt-in)](#-painel-de-container-stats-opt-in)
+- [💧 Wallet do faucet — fundos](#-wallet-do-faucet--fundos)
+- [🛠️ Scripts CLI](#️-scripts-cli)
+- [💾 Persistência e reset](#-persistência-e-reset)
+- [🔧 Troubleshooting](#-troubleshooting)
+- [📚 Referências](#-referências)
+
+---
+
+## 📦 O que vem na caixa
+
+| Serviço             | Container                  | Imagem / build           | O que faz                                                         |
+| ------------------- | -------------------------- | ------------------------ | ----------------------------------------------------------------- |
+| **bitcoind**        | `signet-bitcoind`          | `bitcoin/bitcoin:29`     | Nó completo em Signet, JSON-RPC :38332, ZMQ :28332-28335          |
+| **redis**           | `signet-redis`             | `redis:8-alpine`         | Cache + rate limit + histórico do faucet                          |
+| **web**             | `signet-web`               | `apps/web` (FastAPI)     | Home, faucet, mempool, wallet lab, container stats, docs          |
+| **display**         | `signet-display`           | `apps/display` (FastAPI) | Dashboard HDMI/kiosk                                              |
+| **terminal-webui**  | `signet-terminal-webui`    | `apps/terminal` (FastAPI + `bitcoin-cli`) | Sandbox que roda `bitcoin-cli` / RPC pelo navegador |
+| **terminal-proxy**  | `signet-terminal-proxy`    | `nginx:1.30-alpine`      | Proxy reverso endurecido na frente do `terminal-webui`            |
+
+Tudo via Docker; nada para instalar no host além do próprio Docker.
+
+---
+
+## ✅ Pré-requisitos
+
+- Docker Engine e Docker Compose (plugin `docker compose` v2).
+- ~4 GB de RAM livres recomendados.
+- Portas locais `8080`, `8181`, `8182` livres (o proxy bind apenas em `127.0.0.1`).
+
+```bash
+docker --version
+docker compose version
+```
+
+---
+
+## ⚙️ Configuração (.env)
+
+Um único `.env` na raiz do projeto configura **tudo**. Copie o template uma vez:
 
 ```bash
 cp .env.example .env
 ```
 
-2. Edite `.env` e troque `BITCOIN_RPC_PASSWORD` por uma senha longa e aleatória.
+Variáveis principais (lista completa em [`.env.example`](.env.example)):
 
-```bash
-nano .env
-```
+| Variável                       | Para quê                                                                 |
+| ------------------------------ | ------------------------------------------------------------------------ |
+| `APP_TITLE` · `DEFAULT_LANG`   | Branding e idioma padrão (`pt-BR` ou `en-GB`).                           |
+| `BITCOIN_REPO` · `BITCOIN_VERSION` | Tag da imagem do Bitcoin Core (usada por `bitcoind` e pelo terminal).|
+| `PYTHON_IMAGE` · `NGINX_IMAGE` | Imagens base dos apps FastAPI e do proxy do terminal.                    |
+| `BITCOIN_RPC_AUTH_MODE`        | `password` (padrão) ou `cookie` — veja a próxima seção.                  |
+| `BITCOIN_RPC_USER` · `BITCOIN_RPC_PASSWORD` | Credenciais no modo password.                               |
+| `BITCOIN_RPC_COOKIE_FILE`      | Caminho do cookie dentro dos containers (default já funciona).           |
+| `BITCOIN_RPC_URL`              | URL RPC interna, default `http://bitcoind:38332`.                        |
+| `FAUCET_*` · `MAX_WALLET_SEND_BTC` | Limites do faucet e teto do laboratório de assinatura.               |
+| `TURNSTILE_*`                  | CAPTCHA opcional do Cloudflare Turnstile no faucet.                      |
+| `BASIC_AUTH_USERNAME` · `BASIC_AUTH_PASSWORD` | HTTP Basic auth opcional cobrindo todas as superfícies.   |
+| `TRUST_PROXY_HEADERS`          | Aceitar `X-Forwarded-For` (somente atrás de proxy de confiança).         |
+| `TERMINAL_HOST_PORT`           | Porta do host para o proxy do terminal (default `8182`).                 |
+| `SEARCH_RATE_PER_MIN` · `MEMPOOL_DETAIL_RATE_PER_MIN` | Rate limit por IP.                                |
+| `ENABLE_CONTAINER_STATS`       | Mostra CPU/memória/disco dos containers (precisa do override).           |
 
-3. Suba os serviços:
+> [!IMPORTANT]
+> Não comite `.env`. O `.gitignore` já protege.
 
-```bash
-docker compose up -d --build
-```
+---
 
-4. Inicialize a carteira do faucet:
+## 🔐 Autenticação RPC: senha vs cookie
 
-```bash
-chmod +x scripts/*.sh
-./scripts/init-wallet.sh
-```
+Dois modos, alternados pela variável `BITCOIN_RPC_AUTH_MODE` no `.env`.
 
-5. Acompanhe a sincronização:
+### `password` (padrão)
 
-```bash
-./scripts/status.sh
-```
+`bitcoind` sobe com `-rpcuser=$BITCOIN_RPC_USER -rpcpassword=$BITCOIN_RPC_PASSWORD`. Todos os clientes (web, display, terminal, scripts, `bitcoin-cli` interno) leem a mesma dupla do `.env`. Simples, mas a senha fica em variáveis de ambiente em vários containers.
 
-## Uso
+### `cookie`
 
-```text
-http://localhost:8080          # página inicial
-http://localhost:8080/mempool  # monitor de mempool
-http://localhost:8080/faucet   # faucet Signet
-http://localhost:8080/wallet   # laboratório de carteira
-http://localhost:8080/stats    # estatísticas de containers
-http://localhost:8181          # display HDMI
-```
+`bitcoind` não recebe `-rpcuser` / `-rpcpassword` — ele gera automaticamente `~/.bitcoin/signet/.cookie` com `__cookie__:<hex-aleatório>`. O volume Docker `bitcoin-data` é montado **somente leitura** em todos os clientes em `/bitcoind-data`, então:
 
-Todas as páginas principais alternam entre `pt-BR` e `en-GB`.
+- `apps/web`, `apps/display` e o backend Python do `terminal-webui` leem o cookie via `BITCOIN_RPC_COOKIE_FILE=/bitcoind-data/signet/.cookie`.
+- O `bitcoin-cli` dentro do sandbox do terminal é configurado com `rpccookiefile=...` em vez de `rpcuser=...` (veja [`apps/terminal/entrypoint.sh`](apps/terminal/entrypoint.sh)).
+- Os scripts em `scripts/` chamam `bitcoin-cli` dentro do container `signet-bitcoind`, que já tem acesso ao próprio cookie — não precisam de credenciais.
 
-## Publicação segura na internet
-
-Não publique esta stack diretamente na internet sem uma camada de proteção. Para um ambiente público, use um reverse proxy com HTTPS, autenticação e bloqueio explícito das áreas administrativas.
-
-Recomendação mínima:
-
-- faça bind das portas Docker somente em `127.0.0.1` e exponha o serviço público apenas pelo reverse proxy;
-- habilite HTTPS com Caddy, Nginx, Traefik ou Cloudflare Tunnel;
-- configure `BASIC_AUTH_USERNAME` e `BASIC_AUTH_PASSWORD` para proteger o app inteiro quando ele ficar acessível fora da rede local;
-- habilite `TURNSTILE_ENABLED=true` no faucet e configure as chaves da Cloudflare;
-- mantenha `ENABLE_CONTAINER_STATS=false` em produção e não use o override `docker-compose.stats.yml`;
-- não exponha `/wallet`, `/api/wallet/*`, `/stats`, `/api/container-stats`, RPC, ZMQ, Redis ou Docker socket para a internet;
-- mantenha pouco saldo na carteira do faucet e use somente moedas Signet;
-- use firewall no host permitindo publicamente apenas `80/tcp` e `443/tcp`;
-- use `TRUST_PROXY_HEADERS=true` apenas quando o proxy estiver sob seu controle.
-
-Exemplo seguro para publicação via proxy local:
-
-```yaml
-ports:
-  - "127.0.0.1:8080:8080"
-  - "127.0.0.1:8181:8181"
-```
-
-## Estatísticas de containers
-
-A página `/stats` fica desativada por padrão para evitar exposição do Docker socket. Para laboratório local confiável, habilite `ENABLE_CONTAINER_STATS=true` no `.env` e suba a stack com o override:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.stats.yml up -d --build
-```
-
-Esse override monta o Docker socket em modo somente leitura no container `faucet` e executa esse container como `root`. Essa configuração é prática para laboratório local, mas não deve ser exposta na internet. Mesmo em modo read-only, o Docker socket revela informações sensíveis do host.
-
-Ela mostra somente os containers da stack (`signet-bitcoind`, `signet-redis`, `signet-faucet`, `signet-display`), incluindo CPU, memória, tamanho em disco, rede e I/O. A tela atualiza automaticamente a cada 30 segundos e possui botão de atualização imediata.
-
-## Scripts
-
-- `scripts/common.sh`: helper interno usado pelos demais scripts. Carrega `.env` e centraliza as chamadas ao `bitcoin-cli` dentro do container `signet-bitcoind`.
-- `scripts/bitcoin-cli.sh`: executa qualquer comando `bitcoin-cli` em Signet. Exemplo: `./scripts/bitcoin-cli.sh getblockchaininfo`.
-- `scripts/init-wallet.sh`: carrega a carteira definida em `FAUCET_WALLET_NAME`; se ela ainda não existir, cria a carteira e gera um endereço novo.
-- `scripts/status.sh`: mostra informações de blockchain, rede, mempool, ZMQ e carteira do faucet.
-- `scripts/mempool.sh`: mostra `getmempoolinfo` e a lista bruta de transações na mempool local.
-- `scripts/new-address.sh`: gera um novo endereço na carteira do faucet.
-- `scripts/send-test.sh`: envia moedas Signet da carteira do faucet para um endereço informado. Uso: `./scripts/send-test.sh <endereco_signet> <valor_btc>`.
-
-## Faucet e moedas Signet
-
-Este projeto não minera nem cria moedas Signet automaticamente. O faucet apenas envia moedas que já existem na carteira definida por `FAUCET_WALLET_NAME`.
-
-Fluxo recomendado:
-
-```bash
-./scripts/init-wallet.sh
-./scripts/new-address.sh
-```
-
-Envie sBTC de uma fonte Signet externa para o endereço gerado. Depois de confirmado, a página `/faucet` passa a distribuir `FAUCET_AMOUNT_BTC` por solicitação, respeitando cooldown e limites por IP.
-
-## Mempool
-
-O monitor em `/mempool` é inspirado no `mempool.space/signet` e usa somente HTML, CSS e JavaScript servidos pelo FastAPI.
-
-Principais recursos:
-
-- blocos a serem minerados à esquerda e blocos minerados à direita;
-- blocos minerados recentes listados em fila horizontal, com drag pelo mouse e barra de rolagem;
-- blocos ordenados por altura, do maior para o menor;
-- cubos com número do bloco, faixa de taxa, total em sBTC, transações e tempo relativo;
-- lista de transações paginada de 10 em 10, ordenada por tempo crescente;
-- TXIDs completos como links, com destaque nos 7 primeiros e 7 últimos caracteres;
-- busca no topo por TXID, bloco, hash, métrica do node e endereço;
-- modal de transação com inputs, outputs, taxa, tamanho, peso, dependências, raw hex e JSON decodificado;
-- modal de endereço inspirado no mempool.space, com saldo, recebidos, enviados, UTXOs, gráfico de histórico, bolhas de UTXO e histórico de transações.
-
-### Busca por endereço
-
-O Bitcoin Core puro não possui índice completo por endereço como o mempool.space usa por trás via Esplora/Electrum. Para manter o projeto local e simples:
-
-- se o endereço pertence a uma wallet carregada, a API usa `listreceivedbyaddress` e `listunspent`, que é rápido;
-- caso contrário, usa `scantxoutset` como fallback, que pode demorar alguns segundos;
-- respostas de endereço ficam em cache por 60 segundos no Redis.
-
-Por isso, detalhes de endereços de wallets locais tendem a abrir rapidamente; endereços arbitrários podem ser mais lentos.
-
-## Segurança aplicada
-
-- Os containers web rodam como usuário não-root no compose padrão. O override `docker-compose.stats.yml` muda o `faucet` para `root` apenas quando as estatísticas locais via Docker socket são habilitadas.
-- As duas aplicações Python usam um único `Dockerfile` e um único `requirements.txt` na raiz do projeto.
-- O runtime Python está fixado em `python:3.14-slim` e todas as bibliotecas Python estão pinadas com `==` para builds reproduzíveis.
-- `Dockerfile` e `requirements.txt` duplicados em subpastas foram removidos.
-- Portas RPC/ZMQ do Bitcoin Core ficam expostas apenas dentro da rede Docker por padrão.
-- Headers HTTP básicos de segurança foram adicionados.
-- Autenticação HTTP Basic opcional foi adicionada via `BASIC_AUTH_USERNAME` e `BASIC_AUTH_PASSWORD`.
-- `x-forwarded-for` só é aceito quando `TRUST_PROXY_HEADERS=true`.
-- Endpoints de carteira validam nomes, endereços Signet, valores e hex de transação.
-- Renderização dinâmica das UIs escapa conteúdo antes de inserir HTML.
-- Estatísticas via Docker socket são opt-in.
-
-## Variáveis importantes
-
-```text
-BITCOIN_RPC_USER              usuário RPC do Bitcoin Core
-BITCOIN_RPC_PASSWORD          senha RPC forte
-FAUCET_AMOUNT_BTC             valor enviado por solicitação
-FAUCET_COOLDOWN_SECONDS       espera por endereço
-FAUCET_MAX_PER_IP_PER_DAY     limite diário por IP
-FAUCET_WALLET_NAME            carteira usada pelo faucet
-MAX_WALLET_SEND_BTC           limite para o laboratório de assinatura
-TURNSTILE_ENABLED             habilita Cloudflare Turnstile
-TRUST_PROXY_HEADERS           aceita x-forwarded-for de proxy confiável
-ENABLE_CONTAINER_STATS        habilita a API de estatísticas de containers
-BASIC_AUTH_USERNAME           usuário para autenticação HTTP Basic opcional
-BASIC_AUTH_PASSWORD           senha para autenticação HTTP Basic opcional
-DEFAULT_LANG                  idioma padrão: pt-BR ou en-GB
-```
-
-## ZMQ
-
-O Bitcoin Core publica eventos ZMQ dentro da rede Docker:
+A troca é uma única variável:
 
 ```ini
-zmqpubrawblock=tcp://0.0.0.0:28332
-zmqpubrawtx=tcp://0.0.0.0:28333
-zmqpubhashblock=tcp://0.0.0.0:28334
-zmqpubhashtx=tcp://0.0.0.0:28335
+BITCOIN_RPC_AUTH_MODE=cookie
 ```
 
-Use o host `bitcoind` a partir de outros containers.
+depois `docker compose up -d --build`. O bitcoind regenera o cookie a cada start; nenhum cliente cacheia o caminho.
 
-## Manutenção
+---
+
+## 🚀 Subir a stack
 
 ```bash
-docker compose ps
-docker compose logs -f faucet
-docker compose down
-docker compose pull
 docker compose up -d --build
+chmod +x scripts/*.sh
+./scripts/init-wallet.sh
+./scripts/status.sh             # blockchain / rede / mempool / ZMQ / wallet do faucet
 ```
+
+Abra:
+
+```text
+http://localhost:8080            # Hub web (home + faucet + mempool + wallet + stats + docs)
+http://localhost:8181            # Display HDMI
+http://localhost:8182            # Terminal Bitcoin Core
+```
+
+Todas as UIs alternam entre `pt-BR` e `en-GB` no menu de engrenagem.
+
+---
+
+## 🧪 Smoke test
+
+```bash
+# Snapshot completo (usa o .env)
+./scripts/status.sh
+
+# Heartbeat do hub web
+curl http://localhost:8080/api/status | jq .
+
+# Heartbeat do terminal
+curl http://localhost:8182/api/health | jq .
+
+# bitcoin-cli dentro do container bitcoind
+docker exec signet-bitcoind bitcoin-cli -signet \
+  -rpcuser="$BITCOIN_RPC_USER" -rpcpassword="$BITCOIN_RPC_PASSWORD" \
+  getblockchaininfo
+```
+
+---
+
+## 🗂️ Estrutura do projeto
+
+```text
+signet-clean-node-full/
+├── apps/
+│   ├── web/                       Hub FastAPI (porta 8080)
+│   │   ├── Dockerfile
+│   │   ├── requirements.txt
+│   │   └── app/
+│   │       ├── main.py            FastAPI factory + include_router
+│   │       ├── templates.py       Jinja2Templates singleton
+│   │       ├── core/              env, cliente RPC, segurança, cache, validators
+│   │       ├── routes/            pages, blockchain, mempool, search, faucet, wallet, stats
+│   │       ├── static/            css/, js/, img/
+│   │       └── templates/         home, faucet, mempool, wallet, stats, docs
+│   │
+│   ├── display/                   Kiosk HDMI (porta 8181)
+│   │   ├── Dockerfile
+│   │   ├── requirements.txt
+│   │   └── app/{main.py, rpc.py, static/, templates/}
+│   │
+│   └── terminal/                  bitcoin-cli no navegador (porta 8182, atrás do nginx)
+│       ├── Dockerfile             two-stage: pega bitcoin-cli da imagem do bitcoind
+│       ├── entrypoint.sh          renderiza ~/.bitcoin/bitcoin.conf a partir do env
+│       ├── nginx.conf             config do proxy reverso
+│       ├── requirements.txt
+│       ├── version.txt            mostrado na UI
+│       ├── backend/app.py         RPC + endpoint /api/exec do sandbox
+│       └── webui/static/          frontend (HTML/CSS/JS + i18n)
+│
+├── bitcoind/
+│   ├── bitcoin.conf               config base (signet=1, ZMQ, txindex)
+│   └── entrypoint.sh              alterna o modo de auth conforme o env
+│
+├── docs/                          notas de estudo montadas read-only no app web
+├── scripts/                       helpers bash em cima do bitcoin-cli
+├── systemd/                       serviço opcional de kiosk para Raspberry Pi
+├── compose.yml                    stack principal
+├── compose.stats.yml              override opt-in para a página /stats
+├── .env.example                   única fonte de configuração
+├── README.md                      versão em inglês
+└── README.pt-BR.md                este arquivo
+```
+
+---
+
+## 🌐 Hub web (porta 8080)
+
+App único FastAPI que serve cada página + API do laboratório.
+
+### Páginas
+
+| Path           | O que aparece                                                               |
+| -------------- | --------------------------------------------------------------------------- |
+| `/`            | Home — status do nó + cards para cada superfície.                            |
+| `/faucet`      | Solicitação de sBTC; rate limit por IP e por endereço.                       |
+| `/mempool`     | Explorador inspirado no mempool.space (HTML/CSS/JS puro).                    |
+| `/wallet`      | Lab de carteira: criar/carregar/excluir wallets, gerar endereços, assinar PSBT. |
+| `/stats`       | Estatísticas dos containers (CPU/mem/disco/rede), opt-in.                    |
+| `/study-docs`  | Notas locais de Bitcoin Core / RPC / ZMQ / wallet em `docs/`.                |
+
+### Superfície de API
+
+Endpoints de leitura (timeout curto, com rate limit):
+
+| Método | Path                                  | Para quê                                                    |
+| ------ | ------------------------------------- | ----------------------------------------------------------- |
+| `GET`  | `/api/status`                         | Snapshot para a home / faucet.                              |
+| `GET`  | `/api/zmq`                            | `getzmqnotifications`.                                      |
+| `GET`  | `/api/rpc-help?command=...`           | `help <command>` (nome validado).                           |
+| `GET`  | `/api/blocks/recent?limit=N`          | Blocos minerados recentes com fee stats.                     |
+| `GET`  | `/api/blocks/{height}/txs`            | Detalhe de bloco minerado.                                   |
+| `GET`  | `/api/mempool` · `/api/mempool/raw`   | `getmempoolinfo`, `getrawmempool`.                          |
+| `GET`  | `/api/mempool/txs?limit=N`            | Lista de TXs do mempool com endereços, fees, blocos projetados. |
+| `GET`  | `/api/mempool/tx/{txid}`              | Detalhe completo da TX (rate-limited).                      |
+| `GET`  | `/api/mempool/blocks`                 | Resumo de blocos projetados (buckets de fee).               |
+| `GET`  | `/api/mempool/projected-block/{n}`    | Detalhe de cada bloco projetado (rate-limited).             |
+| `GET`  | `/api/search/address/{addr}`          | Visão de um endereço, cache 60s, rate-limited por IP.       |
+| `GET`  | `/api/history`                        | Últimos envios do faucet.                                    |
+| `GET`  | `/api/wallet/list` · `/api/wallet/overview` | Wallets carregadas + saldos/endereços.                |
+| `GET`  | `/api/container-stats`                | Stats dos containers (`ENABLE_CONTAINER_STATS=true`).       |
+
+Endpoints de escrita (timeout maior):
+
+| Método | Path                          | Para quê                                          |
+| ------ | ----------------------------- | ------------------------------------------------- |
+| `POST` | `/api/request`                | Envio do faucet.                                  |
+| `POST` | `/api/wallet/create`          | Cria ou carrega uma wallet.                        |
+| `POST` | `/api/wallet/create-faucet`   | Cria a wallet do faucet + retorna um endereço.     |
+| `POST` | `/api/wallet/load`            | Carrega uma wallet existente.                      |
+| `POST` | `/api/wallet/delete`          | Exclui (precisa estar com saldo zero).             |
+| `POST` | `/api/wallet/address`         | Novo endereço de recebimento.                      |
+| `POST` | `/api/wallet/sign`            | Constrói + assina um PSBT (NÃO faz broadcast).     |
+| `POST` | `/api/wallet/broadcast`       | `sendrawtransaction` para um hex assinado.         |
+
+> [!CAUTION]
+> Os endpoints de wallet foram desenhados para um **lab em `127.0.0.1`**. Se publicar a stack, proteja com `BASIC_AUTH_USERNAME` / `BASIC_AUTH_PASSWORD` (ou um proxy reverso real com autenticação) — não há auth por endpoint.
+
+---
+
+## 🖥️ Display HDMI (porta 8181)
+
+App FastAPI minúsculo que renderiza uma tela no estilo "hardware wallet" para um monitor de kiosk. A unit em [`systemd/signet-display-kiosk.service`](systemd/signet-display-kiosk.service) abre o Chromium em modo kiosk apontando para `http://localhost:8181`.
+
+```bash
+sudo cp systemd/signet-display-kiosk.service /etc/systemd/system/
+sudo systemctl enable --now signet-display-kiosk.service
+```
+
+`GET /api/status` retorna o mesmo JSON consumido pela tela — útil para qualquer dashboard externo.
+
+---
+
+## ⛏️ Terminal Bitcoin Core (porta 8182)
+
+Adaptado de [`gustavoschaedler/bitcoin-core-terminal`](https://github.com/gustavoschaedler/bitcoin-core-terminal), redirecionado ao nó Signet deste projeto.
+
+### O que tem dentro
+
+- **Prompt no estilo `bitcoin-cli`**: digite `getblockchaininfo`, `getmempoolinfo`, `listwallets` etc. Aspas e parâmetros JSON são parseados.
+- **Escape de shell**: comece a linha com `!` para rodar comando de shell no sandbox (`jq`, `grep`, `sed`, `less` já vêm).
+- **Sidebar de snippets** com busca, expandir/recolher e autocomplete via `Tab`/`→`.
+- **Splits e histórico**: múltiplos painéis; `↑`/`↓` por painel; `Ctrl+L` limpa.
+- **Idiomas**: alternância entre English (UK) e Português (Brasil).
+- **API HTTP**: `/api/health`, `/api/meta`, `/api/wallets`, `/api/rpc`, `/api/exec`, `/api` (Swagger).
+
+### Como conversa com o nó
+
+```text
+Navegador
+  │  HTTP :8182 (somente 127.0.0.1)
+  ▼
+terminal-proxy (nginx)
+  ▼
+terminal-webui (FastAPI + bitcoin-cli)
+  ▼  JSON-RPC :38332 (senha OU cookie)
+signet-bitcoind  (compartilhado com web, display, faucet)
+```
+
+### Hardening
+
+O container `terminal-webui` roda como `sandbox` (uid 1000), `read_only: true`, com `/tmp` e `~/.bitcoin` em `tmpfs`, todas as capabilities removidas e `no-new-privileges`. O `terminal-proxy` mantém o conjunto mínimo de capabilities que o nginx precisa para abrir porta. Ambos só ouvem em `127.0.0.1`.
+
+`/api/exec`:
+
+- limita stdout/stderr em ~1 MiB;
+- timeout default 30 s, máximo 120 s;
+- roda o processo em um novo grupo e mata a árvore inteira no timeout;
+- restringe `cwd` a uma allow-list (`$HOME`, `/tmp`, `/app`) — recusa outros caminhos com `exec_cwd_forbidden`.
+
+> [!WARNING]
+> `/api/exec` executa **shell arbitrário** como usuário `sandbox` dentro do container. Nunca exponha essa superfície fora de `127.0.0.1` sem um proxy reverso com autenticação.
+
+---
+
+## 🔌 Portas
+
+| Escopo                     | Endereço                               | Observação                          |
+| -------------------------- | -------------------------------------- | ----------------------------------- |
+| Hub web                    | `127.0.0.1:8080` → `web`               | Faucet, mempool, wallet, stats.     |
+| Display HDMI               | `127.0.0.1:8181` → `display`           | Dashboard kiosk.                    |
+| Terminal Bitcoin Core      | `127.0.0.1:8182` → nginx → terminal    | Sandbox `bitcoin-cli` no navegador. |
+| RPC (interno)              | `bitcoind:38332`                       | Não publicado no host.              |
+| P2P (interno)              | `bitcoind:38333`                       | Não publicado.                      |
+| ZMQ (interno)              | `bitcoind:28332..28335`                | Não publicado.                      |
+| Redis (interno)            | `redis:6379`                           | Não publicado.                      |
+
+---
+
+## 🛡️ Arquitetura de rede
+
+```text
+Navegador
+  │
+  ├── 8080 ──▶ web (FastAPI)
+  ├── 8181 ──▶ display (FastAPI)
+  └── 8182 ──▶ terminal-proxy (nginx) ──▶ terminal-webui (FastAPI)
+                                              │
+                                              ▼
+                                          bitcoind (JSON-RPC, ZMQ)
+                                              ▲
+                                          redis ◀── web (rate limit + cache)
+```
+
+Todos os binds do host vão por padrão em `127.0.0.1`. RPC, ZMQ, P2P e Redis ficam contidos na rede do Compose.
+
+---
+
+## 🔒 Hardening de segurança
+
+A base de código foi auditada e endurecida. Pontos principais:
+
+- **Cookie auth suportada** ao lado de user/senha — `BITCOIN_RPC_AUTH_MODE=cookie` tira a senha das envs dos apps.
+- **Address search com rate limit** (`SEARCH_RATE_PER_MIN`, default 6/min/IP). O caminho `?refresh=true` (mais caro) tem cota própria, mais estrita.
+- **Endpoints de detalhe de mempool com rate limit** (`MEMPOOL_DETAIL_RATE_PER_MIN`, default 60/min/IP).
+- **Timeouts RPC menores** — leituras default 15 s; só escritas (faucet, wallet) ganham 30 s.
+- **Content-Security-Policy** aplicado em todas as respostas (permite o Cloudflare Turnstile).
+- **Headers padrão**: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`.
+- **HTTP Basic auth opcional** (`BASIC_AUTH_*`) cobre todas as superfícies web.
+- **Allow-list para `cwd` em `/api/exec`** — o sandbox do terminal recusa `cwd` fora de `$HOME`, `/tmp` ou `/app`.
+- **Validação rigorosa** em todos os endpoints de wallet: regex de nome, prefixo signet/testnet + `validateaddress`, regex de raw-tx hex, teto de valor decimal.
+- **Containers somente leitura**: `terminal-webui` roda `read_only: true` com tmpfs; ambos os containers do terminal têm `cap_drop: [ALL]` e `no-new-privileges`.
+- **Trust-proxy headers desligado por default** — só honra `X-Forwarded-For` quando `TRUST_PROXY_HEADERS=true`.
+- **Nada de credencial em log** — erros de RPC retornam ao cliente sem ecoar URL ou tupla de auth.
+
+Para exposição na internet, adicione:
+
+- bind apenas em `127.0.0.1` e proxy reverso real (Caddy/Nginx/Traefik/Cloudflare Tunnel);
+- HTTPS obrigatório;
+- ative `BASIC_AUTH_*`;
+- ative `TURNSTILE_ENABLED=true` no faucet;
+- mantenha `ENABLE_CONTAINER_STATS=false`;
+- nunca exponha `/wallet`, `/api/wallet/*`, `/api/exec`, RPC, ZMQ, Redis ou Docker socket;
+- mantenha pouco saldo na wallet do faucet;
+- `TRUST_PROXY_HEADERS=true` apenas se o proxy é seu.
+
+---
+
+## 📊 Painel de container stats (opt-in)
+
+A página `/stats` fica desabilitada por padrão. Para ativar em laboratório local de confiança:
+
+```bash
+# .env
+ENABLE_CONTAINER_STATS=true
+```
+
+```bash
+docker compose -f compose.yml -f compose.stats.yml up -d --build
+```
+
+O override monta `/var/run/docker.sock` somente leitura no container `web` e roda esse container como `root`. Conveniente localmente; **nunca exponha**.
+
+Ele só reporta containers do projeto: `signet-bitcoind`, `signet-redis`, `signet-web`, `signet-display`, `signet-terminal-webui`, `signet-terminal-proxy`.
+
+---
+
+## 💧 Wallet do faucet — fundos
+
+Esta stack não minera. O faucet só envia o que está em `FAUCET_WALLET_NAME`.
+
+```bash
+./scripts/init-wallet.sh         # cria a wallet, imprime um endereço
+./scripts/new-address.sh         # endereços extras
+```
+
+Mande sBTC de um faucet Signet público (ex.: <https://signetfaucet.com/>) para o endereço impresso. Após confirmação, `/faucet` distribui `FAUCET_AMOUNT_BTC` por solicitação, respeitando `FAUCET_COOLDOWN_SECONDS` por endereço e `FAUCET_MAX_PER_IP_PER_DAY` por IP.
+
+---
+
+## 🛠️ Scripts CLI
+
+Todos chamam `bitcoin-cli` dentro do `signet-bitcoind`, escolhendo automaticamente o modo de auth conforme `BITCOIN_RPC_AUTH_MODE`.
+
+| Script                          | O que faz                                                         |
+| ------------------------------- | ----------------------------------------------------------------- |
+| [`scripts/common.sh`](scripts/common.sh)         | Helper interno usado pelos demais.            |
+| [`scripts/bitcoin-cli.sh`](scripts/bitcoin-cli.sh) | Roda qualquer `bitcoin-cli ...` no nó.       |
+| [`scripts/init-wallet.sh`](scripts/init-wallet.sh) | Carrega ou cria a wallet do faucet.          |
+| [`scripts/status.sh`](scripts/status.sh)         | Blockchain / rede / mempool / ZMQ / faucet.   |
+| [`scripts/mempool.sh`](scripts/mempool.sh)       | `getmempoolinfo` e a lista raw do mempool.    |
+| [`scripts/new-address.sh`](scripts/new-address.sh) | Novo endereço de recebimento na wallet.    |
+| [`scripts/send-test.sh`](scripts/send-test.sh)   | `./scripts/send-test.sh <endereço> <valor>`.  |
+
+---
+
+## 💾 Persistência e reset
+
+O estado vive em dois volumes nomeados: `bitcoin-data` (datadir Signet completo + cookie) e `redis-data` (histórico do faucet + cache + rate limit).
+
+```bash
+# Para sem apagar dados:
+docker compose down
+
+# Reset total (apaga wallets, blocos, histórico do faucet):
+docker compose down -v
+```
+
+---
+
+## 🔧 Troubleshooting
+
+<details>
+<summary><code>Could not locate RPC credentials</code> ao chamar <code>bitcoin-cli</code> direto no host</summary>
+
+Use o script do projeto — ele entende os dois modos de auth:
+
+```bash
+./scripts/bitcoin-cli.sh getblockchaininfo
+```
+
+Se precisar rodar `bitcoin-cli` manualmente, rode dentro do container como usuário `bitcoin` (lê o cookie) ou passe `-rpcuser` / `-rpcpassword`.
+</details>
+
+<details>
+<summary><code>502 Bad Gateway</code> logo após subir o terminal</summary>
+
+`terminal-proxy` subiu antes do `terminal-webui` terminar. Espere uns segundos e recarregue.
+</details>
+
+<details>
+<summary>Porta 8080 / 8181 / 8182 já em uso</summary>
+
+Troque a porta no `compose.yml` (ou `TERMINAL_HOST_PORT` para o terminal) e recrie a stack.
+</details>
+
+<details>
+<summary>Erros de RPC depois de trocar para cookie</summary>
+
+Recrie o container do bitcoind para que ele gere um cookie compatível com a execução atual:
+
+```bash
+docker compose up -d --force-recreate bitcoind
+```
+</details>
+
+<details>
+<summary>Address search retorna 429</summary>
+
+Você bateu o `SEARCH_RATE_PER_MIN`. Espere um minuto ou aumente no `.env`. O caminho `?refresh=true` tem cota mais estrita.
+</details>
+
+---
+
+## 📚 Referências
+
+- [Bitcoin Core — docs](https://bitcoincore.org/en/doc/)
+- [Bitcoin RPC reference](https://developer.bitcoin.org/reference/rpc/)
+- [Bitcoin Core Terminal — projeto upstream](https://github.com/gustavoschaedler/bitcoin-core-terminal)
+- [Faucet Signet público](https://signetfaucet.com/)
+
+---
+
+<div align="center">
+<sub>Feito ⛏️ para quem está aprendendo Bitcoin · <a href="README.md">🇬🇧 English version</a></sub>
+</div>

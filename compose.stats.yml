@@ -1,0 +1,10 @@
+# Override that exposes the Docker socket read-only to the web container so
+# the /stats page can show CPU / mem / I/O for project containers.
+#
+# Use only on a trusted local lab:
+#     docker compose -f compose.yml -f compose.stats.yml up -d --build
+services:
+  web:
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro

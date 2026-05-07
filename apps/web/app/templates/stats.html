@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/css/stats.css">
+</head>
+<body data-default-lang="{{ lang }}">
+  <main>
+    <header>
+      <a href="/" data-i18n="back_home">← Home</a>
+      <div>
+        <h1 data-i18n="title">Container stats</h1>
+        <p data-i18n="subtitle">CPU, memory, network and disk I/O for all project containers.</p>
+      </div>
+      <div><button id="refresh-stats" type="button" data-i18n="refresh">Refresh</button><button data-lang="pt-BR">PT-BR</button><button data-lang="en-GB">GB-EN</button></div>
+    </header>
+    <section class="live-bar">
+      <span class="live-dot"></span>
+      <strong data-i18n="live">Live status</strong>
+      <small id="updated-at">-</small>
+    </section>
+    <section id="cards" class="cards"><div class="empty" data-i18n="loading">Loading...</div></section>
+  </main>
+  <script src="/static/js/stats.js"></script>
+</body>
+</html>
