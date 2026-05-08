@@ -1,24 +1,25 @@
 const translations = {
   "pt-BR": {
-    title:"Laboratório de carteira e assinatura", create_wallet:"Criar carteira", create:"Criar/carregar", create_faucet_wallet:"Criar carteira faucet", new_address:"Novo endereço", select_wallet:"Selecione a carteira", generate:"Gerar", sign_tx:"Criar e assinar transação", create_sign:"Criar PSBT e assinar", back_home:"← Início", result:"Resultado", ready:"Pronto.", running:"Executando...", wallet_placeholder:"carteira-estudo", label_placeholder:"rótulo", wallets:"Carteiras existentes", refresh:"Atualizar", loading:"Carregando...", balance:"Saldo", loaded:"Carregada", addresses:"Endereços", no_addresses:"Nenhum endereço conhecido", confirmations:"confirmações", delete_wallet:"Excluir", delete_title:"Excluir carteira?", delete_confirm:"A carteira {name} será excluída somente se o saldo estiver zerado. Esta ação não deve ser usada em carteiras com fundos.", confirm_delete:"Excluir carteira", cancel:"Cancelar", language:"Idioma", yes:"sim", no:"não", click_wallet:"Clique em uma carteira acima para selecioná-la", signing_from:"Assinando com", subtitle:"Crie carteiras, gere endereços, crie PSBTs e assine transações.", no_faucet_wallet:"Nenhuma carteira faucet encontrada. Crie uma para habilitar o faucet.",
+    title:"Laboratório de carteira", create_wallet:"Criar carteira", create:"Criar/carregar", create_faucet_wallet:"Criar carteira faucet", new_address:"Novo endereço", result:"Resultado", ready:"Pronto.", running:"Executando...", wallet_placeholder:"carteira-estudo", label_placeholder:"rótulo", wallets:"Carteiras existentes", loading:"Carregando...", balance:"Saldo", addresses:"Endereços", no_addresses:"Nenhum endereço conhecido", confirmations:"confirmações", delete_wallet:"Excluir", delete_title:"Excluir carteira?", delete_confirm:"A carteira {name} será excluída somente se o saldo estiver zerado. Esta ação não deve ser usada em carteiras com fundos.", confirm_delete:"Excluir carteira", cancel:"Cancelar", subtitle:"Crie carteiras, gere endereços e gerencie chaves.", no_faucet_wallet:"Nenhuma carteira faucet encontrada. Crie uma para habilitar o faucet.",
     export_wallet:"Exportar", export_all:"Exportar todas", import_wallet:"Importar", export_title:"Exportar carteiras?", export_title_single:"Exportar carteira?", export_confirm:"Exportar", export_warning:"O arquivo conterá chaves privadas. Guarde-o em local seguro.",
-    nav_home:"Início", nav_faucet:"Faucet", nav_mempool:"Mempool", nav_wallet:"Carteira", nav_stats:"Stats", nav_docs:"Docs", nav_display:"Display", nav_terminal:"Terminal", nav_last_refresh:"Última atualização", brand_subtitle:"Plataforma de estudo do Core"
+    scanning:"Escaneando blockchain…", scanning_pct:"Escaneando {pct}%",
+    nav_home:"Início", nav_faucet:"Faucet", nav_mempool:"Mempool", nav_wallet:"Carteira", nav_signing:"Assinatura", nav_stats:"Stats", nav_docs:"Docs", nav_display:"Display", nav_terminal:"Terminal", nav_last_refresh:"Última atualização", brand_subtitle:"Plataforma de estudo do Core"
   },
   "en-GB": {
-    title:"Wallet and signing lab", create_wallet:"Create wallet", create:"Create/load", create_faucet_wallet:"Create faucet wallet", new_address:"New address", select_wallet:"Select wallet", generate:"Generate", sign_tx:"Create and sign transaction", create_sign:"Create PSBT and sign", back_home:"← Home", result:"Result", ready:"Ready.", running:"Running...", wallet_placeholder:"study-wallet", label_placeholder:"label", wallets:"Existing wallets", refresh:"Refresh", loading:"Loading...", balance:"Balance", loaded:"Loaded", addresses:"Addresses", no_addresses:"No known addresses", confirmations:"confirmations", delete_wallet:"Delete", delete_title:"Delete wallet?", delete_confirm:"Wallet {name} will be deleted only if the balance is zero. Do not use this action on wallets with funds.", confirm_delete:"Delete wallet", cancel:"Cancel", language:"Language", yes:"yes", no:"no", click_wallet:"Click a wallet above to select it", signing_from:"Signing from", subtitle:"Create wallets, derive addresses, create PSBTs and sign transactions.", no_faucet_wallet:"No faucet wallet found. Create one to enable the faucet.",
+    title:"Wallet lab", create_wallet:"Create wallet", create:"Create/load", create_faucet_wallet:"Create faucet wallet", new_address:"New address", result:"Result", ready:"Ready.", running:"Running...", wallet_placeholder:"study-wallet", label_placeholder:"label", wallets:"Existing wallets", loading:"Loading...", balance:"Balance", addresses:"Addresses", no_addresses:"No known addresses", confirmations:"confirmations", delete_wallet:"Delete", delete_title:"Delete wallet?", delete_confirm:"Wallet {name} will be deleted only if the balance is zero. Do not use this action on wallets with funds.", confirm_delete:"Delete wallet", cancel:"Cancel", subtitle:"Create wallets, derive addresses and manage keys.", no_faucet_wallet:"No faucet wallet found. Create one to enable the faucet.",
     export_wallet:"Export", export_all:"Export all", import_wallet:"Import", export_title:"Export wallets?", export_title_single:"Export wallet?", export_confirm:"Export", export_warning:"The file will contain private keys. Store it in a safe place.",
-    nav_home:"Home", nav_faucet:"Faucet", nav_mempool:"Mempool", nav_wallet:"Wallet", nav_stats:"Stats", nav_docs:"Docs", nav_display:"Display", nav_terminal:"Terminal", nav_last_refresh:"Last refresh", brand_subtitle:"Core study platform"
+    scanning:"Scanning blockchain…", scanning_pct:"Scanning {pct}%",
+    nav_home:"Home", nav_faucet:"Faucet", nav_mempool:"Mempool", nav_wallet:"Wallet", nav_signing:"Signing", nav_stats:"Stats", nav_docs:"Docs", nav_display:"Display", nav_terminal:"Terminal", nav_last_refresh:"Last refresh", brand_subtitle:"Core study platform"
   }
 };
 let currentLang = localStorage.getItem("lang")||document.body.dataset.defaultLang||"pt-BR";
 let currentWallets = [];
 let pendingDeleteWallet = "";
-function setLang(lang){currentLang=translations[lang]?lang:"pt-BR";localStorage.setItem("lang",currentLang);document.documentElement.lang=currentLang;document.querySelectorAll("[data-i18n]").forEach(el=>{const k=el.dataset.i18n;if(translations[currentLang]?.[k])el.textContent=translations[currentLang][k]});document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{const k=el.dataset.i18nPlaceholder;if(translations[currentLang]?.[k])el.placeholder=translations[currentLang][k]});document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("active",b.dataset.lang===currentLang));renderWalletOptions(currentWallets);updateDeleteMessage()}
+function setLang(lang){currentLang=translations[lang]?lang:"pt-BR";localStorage.setItem("lang",currentLang);document.documentElement.lang=currentLang;document.querySelectorAll("[data-i18n]").forEach(el=>{const k=el.dataset.i18n;if(translations[currentLang]?.[k])el.textContent=translations[currentLang][k]});document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{const k=el.dataset.i18nPlaceholder;if(translations[currentLang]?.[k])el.placeholder=translations[currentLang][k]});document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("active",b.dataset.lang===currentLang));updateDeleteMessage()}
 const out=document.getElementById("output");
 const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[char]));
 const btc = n => n === null || n === undefined || Number.isNaN(Number(n)) ? "-" : Number(n).toFixed(8);
 const sats = n => n === null || n === undefined || Number.isNaN(Number(n)) ? "-" : Math.round(Number(n) * 100_000_000).toLocaleString(currentLang);
-const signetAmount = n => `${btc(Number(n))} sBTC / ${sats(Number(n))} s-sats`;
 const amountParts = n => ({ btc:`${btc(Number(n))} sBTC`, sats:`${sats(Number(n))} s-sats` });
 const COPY_ICON_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>`;
 function renderCopy(value, label){
@@ -62,16 +63,6 @@ function closeDeleteModal(){
 }
 async function postForm(url, form){out.textContent=translations[currentLang].running;const res=await fetch(url,{method:"POST",body:new FormData(form)});const data=await res.json();out.textContent=JSON.stringify(data,null,2);loadWallets()}
 async function postData(url, data){out.textContent=translations[currentLang].running;const body=new FormData();Object.entries(data).forEach(([key,value])=>body.append(key,value));const res=await fetch(url,{method:"POST",body});out.textContent=JSON.stringify(await res.json(),null,2);loadWallets()}
-function renderWalletOptions(wallets){
-  const opts = `<option value="">${escapeHtml(translations[currentLang].select_wallet)}</option>`+(wallets||[]).map(wallet=>`<option value="${escapeHtml(wallet.name)}">${escapeHtml(wallet.name)}${wallet.loaded ? "" : " (not loaded)"}</option>`).join("");
-  ["sign-tx-wallet"].forEach(id=>{
-    const select=document.getElementById(id);
-    if(!select) return;
-    const previous=select.value;
-    select.innerHTML=opts;
-    if((wallets||[]).some(wallet=>wallet.name===previous)) select.value=previous;
-  });
-}
 function renderWallet(wallet){
   const balance = amountParts(wallet.balance);
   const addressesCount = wallet.addresses?.length || 0;
@@ -95,7 +86,7 @@ function renderWallet(wallet){
       <span>${escapeHtml(translations[currentLang].balance)}</span>
       <strong>${escapeHtml(balance.btc)}</strong>
       <small>${escapeHtml(balance.sats)}</small>
-    </div>
+    </div>${wallet.scanning ? `<div class="wallet-scanning"><div class="scanning-bar"><div class="scanning-fill" style="width:${typeof wallet.scanning==="number"?Math.round(wallet.scanning*100):0}%"></div></div><span>${typeof wallet.scanning==="number"?translations[currentLang].scanning_pct.replace("{pct}",Math.round(wallet.scanning*100)):translations[currentLang].scanning}</span></div>` : ""}
     ${wallet.error ? `<pre>${escapeHtml(wallet.error)}</pre>` : `<div class="wallet-section-title"><h4>${escapeHtml(translations[currentLang].addresses)}</h4><span>${escapeHtml(addressesCount)}</span></div>${addresses}`}
   </article>`;
 }
@@ -112,13 +103,53 @@ async function loadWallets(){
   try{
     const data=await fetch("/api/wallet/overview").then(r=>r.json());
     currentWallets=data.wallets||[];
-    renderWalletOptions(currentWallets);
     target.innerHTML=currentWallets.map(renderWallet).join("") || `<div class="empty">${escapeHtml(translations[currentLang].no_addresses)}</div>`;
   }catch(e){
     target.innerHTML=`<div class="empty">${escapeHtml(e)}</div>`;
   }
   syncFaucetButton();
   if(typeof window.markRefreshed === "function") window.markRefreshed();
+  scheduleScanPoll();
+}
+let _scanTimer=0;
+function scheduleScanPoll(){
+  clearTimeout(_scanTimer);
+  if(currentWallets.some(w=>w.scanning)) _scanTimer=setTimeout(pollScanning,3000);
+}
+async function pollScanning(){
+  try{
+    const data=await fetch("/api/wallet/overview").then(r=>r.json());
+    const fresh=data.wallets||[];
+    for(const w of fresh){
+      const card=document.querySelector(`.wallet-card[data-wallet="${CSS.escape(w.name)}"]`);
+      if(!card) continue;
+      const old=currentWallets.find(o=>o.name===w.name);
+      const balDiv=card.querySelector(".wallet-balance");
+      if(balDiv){
+        const bal=amountParts(w.balance);
+        balDiv.querySelector("strong").textContent=bal.btc;
+        balDiv.querySelector("small").textContent=bal.sats;
+      }
+      let scanDiv=card.querySelector(".wallet-scanning");
+      if(w.scanning){
+        const pct=typeof w.scanning==="number"?Math.round(w.scanning*100):0;
+        const label=typeof w.scanning==="number"?translations[currentLang].scanning_pct.replace("{pct}",pct):translations[currentLang].scanning;
+        if(scanDiv){
+          scanDiv.querySelector(".scanning-fill").style.width=pct+"%";
+          scanDiv.querySelector("span").textContent=label;
+        }else{
+          const tmp=document.createElement("div");
+          tmp.innerHTML=`<div class="wallet-scanning"><div class="scanning-bar"><div class="scanning-fill" style="width:${pct}%"></div></div><span>${escapeHtml(label)}</span></div>`;
+          balDiv.after(tmp.firstElementChild);
+        }
+      }else{
+        if(scanDiv) scanDiv.remove();
+        if(old&&old.scanning) loadWallets();
+      }
+    }
+    currentWallets=fresh;
+  }catch(e){}
+  scheduleScanPoll();
 }
 function downloadJSON(data, filename){
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
@@ -187,7 +218,6 @@ function openExportAll(){
   if(currentWallets.length) openExportModal(currentWallets, "all");
 }
 document.getElementById("create-wallet").addEventListener("submit",e=>{e.preventDefault();postForm("/api/wallet/create",e.target)});
-document.getElementById("sign-tx").addEventListener("submit",e=>{e.preventDefault();postForm("/api/wallet/sign",e.target)});
 document.getElementById("create-faucet-wallet").addEventListener("click",()=>postData("/api/wallet/create-faucet",{}));
 document.getElementById("wallets-list").addEventListener("click",e=>{
   const addrBtn=e.target.closest(".newaddr-wallet");

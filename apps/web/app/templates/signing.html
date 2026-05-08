@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/css/header.css?v=20260508-cog-v4">
+  <link rel="stylesheet" href="/static/css/signing.css?v=20260509-signing-v2">
+</head>
+<body data-default-lang="{{ lang }}">
+  {% include "_header.html" %}
+  <main class="page">
+    <section class="hero-row">
+      <div class="hero-info">
+        <p class="eyebrow">Signet</p>
+        <h1 data-i18n="title">Signing lab</h1>
+        <p data-i18n="subtitle">Create PSBTs, sign and broadcast transactions.</p>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel action-panel">
+        <h2 class="panel-heading">
+          <svg viewBox="0 0 24 24" class="panel-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
+          <span data-i18n="sign_tx">Create and sign transaction</span>
+        </h2>
+        <form id="sign-tx">
+          <select name="wallet" id="sign-tx-wallet" required>
+            <option value="" data-i18n="select_wallet">Select wallet</option>
+          </select>
+          <input name="to_address" placeholder="tb1q..." required>
+          <div class="amount-row">
+            <input name="amount" type="number" step="1" placeholder="10000" required>
+            <select id="amount-unit">
+              <option value="sats" selected>s-sats</option>
+              <option value="btc">sBTC</option>
+            </select>
+          </div>
+          <button data-i18n="create_sign">Create PSBT and sign</button>
+        </form>
+      </div>
+
+      <div class="panel txqueue-panel">
+        <div class="panel-title">
+          <h2 class="panel-heading">
+            <svg viewBox="0 0 24 24" class="panel-icon"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
+            <span data-i18n="tx_queue">Signed transactions</span>
+          </h2>
+          <span class="txqueue-count" id="txqueue-count">0</span>
+        </div>
+        <div id="txqueue-list" class="txqueue-list">
+          <div class="empty compact" data-i18n="tx_queue_empty">No transactions yet. Create and sign a transaction to see it here.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel result-panel">
+      <h2 class="panel-heading">
+        <svg viewBox="0 0 24 24" class="panel-icon"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        <span data-i18n="result">Result</span>
+      </h2>
+      <pre id="output" data-i18n="ready">Ready.</pre>
+    </section>
+  </main>
+
+  <section id="sign-confirm-modal" class="confirm-modal" hidden>
+    <div class="confirm-backdrop" data-close-sign-confirm></div>
+    <div class="confirm-dialog sign-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="sign-confirm-title">
+      <div class="confirm-icon-ring sign-confirm-icon-ring">
+        <svg viewBox="0 0 24 24" class="confirm-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
+      </div>
+      <h2 id="sign-confirm-title" data-i18n="sign_confirm_title">Confirm transaction</h2>
+      <div id="sign-confirm-body" class="sign-confirm-body"></div>
+      <div class="confirm-actions">
+        <button id="cancel-sign" type="button" data-i18n="cancel">Cancel</button>
+        <button id="confirm-sign" class="sign-confirm-action" type="button" data-i18n="confirm_sign">Sign and create</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="/static/js/header.js?v=20260508-search-fix"></script>
+  <script src="/static/js/signing.js?v=20260509-signing-v2"></script>
+</body>
+</html>

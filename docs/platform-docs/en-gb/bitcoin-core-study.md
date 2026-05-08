@@ -46,7 +46,7 @@ tcp://bitcoind:28335 hashtx
 
 ## Signing
 
-Use `/wallet` to create a wallet, derive a Signet address, create a PSBT and sign it.
+Use `/wallet` to create a wallet and derive a Signet address, then use `/signing` to create a PSBT, sign and broadcast it.
 
 ## Faucet Funding
 

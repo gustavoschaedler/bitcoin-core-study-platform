@@ -1,14 +1,16 @@
 # Carteira e Assinatura
 
-## Criando uma Carteira
+A plataforma separa o gerenciamento de carteiras e a assinatura de transações em duas páginas dedicadas.
 
-O lab de carteiras usa as descriptor wallets integradas do Bitcoin Core. Cada carteira é criada via `createwallet` e armazenada no diretório de carteiras do nó.
+## Lab de Carteira (`/wallet`)
+
+O lab de carteiras cuida do ciclo de vida: criação, carregamento, exclusão, derivação de endereços, importação e exportação. Usa as descriptor wallets integradas do Bitcoin Core.
 
 ```bash
 ./scripts/bitcoin-cli.sh createwallet "study-wallet"
 ```
 
-## Gerando Endereços
+### Gerando Endereços
 
 Novos endereços são derivados do conjunto de descritores da carteira. A plataforma gera endereços `bech32m` (Taproot) por padrão.
 
@@ -16,9 +18,13 @@ Novos endereços são derivados do conjunto de descritores da carteira. A plataf
 ./scripts/bitcoin-cli.sh -rpcwallet=study-wallet getnewaddress "" "bech32m"
 ```
 
-## Assinatura de Transações
+### Importação e Exportação
 
-O fluxo de assinatura usa PSBTs (Partially Signed Bitcoin Transactions):
+Carteiras podem ser exportadas (descritores + chaves) e importadas como arquivos JSON, permitindo backup e migração entre nós.
+
+## Lab de Assinatura (`/signing`)
+
+O lab de assinatura cuida da criação, assinatura e transmissão de transações. O fluxo usa PSBTs (Partially Signed Bitcoin Transactions):
 
 1. **Criar** uma transação raw especificando entradas e saídas
 2. **Financiar** a transação com `walletcreatefundedpsbt`
@@ -26,7 +32,7 @@ O fluxo de assinatura usa PSBTs (Partially Signed Bitcoin Transactions):
 4. **Finalizar** com `finalizepsbt`
 5. **Transmitir** com `sendrawtransaction`
 
-A interface do lab de carteiras executa os passos 2–5 em uma única ação.
+A interface do lab de assinatura executa os passos 2–5 em uma única ação. Transações assinadas ficam em fila para revisão antes da transmissão, e os valores podem ser inseridos em s-sats ou sBTC.
 
 ## Comandos RPC Úteis
 

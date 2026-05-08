@@ -2,7 +2,7 @@
 
 # ⚡ Signet Core Study Platform
 
-### Laboratório completo de Bitcoin Core para estudo — nó, faucet, mempool, assinatura de carteira, dashboard HDMI e terminal `bitcoin-cli` no navegador, tudo em Signet.
+### Laboratório completo de Bitcoin Core para estudo — nó, faucet, mempool, gerenciamento de carteiras, assinatura de transações, dashboard HDMI e terminal `bitcoin-cli` no navegador, tudo em Signet.
 
 [![Bitcoin Core](https://img.shields.io/badge/Bitcoin%20Core-29-F7931A?logo=bitcoin&logoColor=white)](https://bitcoincore.org/)
 [![Docker](https://img.shields.io/badge/Docker%20Compose-ready-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
@@ -17,6 +17,64 @@
 
 ---
 
+## 📸 Capturas de tela
+
+<details>
+<summary>Home — status do nó e cards de funcionalidades</summary>
+
+![Home (pt-BR)](assets/screenshots/pt-br/home.png)
+</details>
+
+<details>
+<summary>Faucet — solicitar moedas de teste Signet</summary>
+
+![Faucet (pt-BR)](assets/screenshots/pt-br/faucet.png)
+</details>
+
+<details>
+<summary>Mempool — explorador de mempool em tempo real</summary>
+
+![Mempool (pt-BR)](assets/screenshots/pt-br/mempool.png)
+</details>
+
+<details>
+<summary>Lab de carteira — criar e gerenciar carteiras</summary>
+
+![Wallet (pt-BR)](assets/screenshots/pt-br/wallet.png)
+</details>
+
+<details>
+<summary>Lab de assinatura — criar PSBTs, assinar e transmitir</summary>
+
+![Signing (pt-BR)](assets/screenshots/pt-br/signing.png)
+</details>
+
+<details>
+<summary>Container stats — CPU, memória, disco, rede</summary>
+
+![Stats (pt-BR)](assets/screenshots/pt-br/stats.png)
+</details>
+
+<details>
+<summary>Study docs — notas de referência locais</summary>
+
+![Study Docs (pt-BR)](assets/screenshots/pt-br/study-docs.png)
+</details>
+
+<details>
+<summary>Display HDMI — dashboard kiosk</summary>
+
+![Display](assets/screenshots/pt-br/display.png)
+</details>
+
+<details>
+<summary>Terminal Bitcoin Core — bitcoin-cli no navegador</summary>
+
+![Terminal](assets/screenshots/pt-br/terminal.png)
+</details>
+
+---
+
 ## ⚡ TL;DR — Início rápido
 
 ```bash
@@ -27,7 +85,7 @@ cp .env.example .env
 docker compose up -d --build
 chmod +x scripts/*.sh
 ./scripts/init-wallet.sh         # cria a wallet do faucet e imprime um endereço
-open http://localhost:8080       # hub: faucet, mempool, wallet lab, stats, docs
+open http://localhost:8080       # hub: faucet, mempool, wallet, signing, stats, docs
 ```
 
 Pronto. Você tem um nó Signet `bitcoind` e quatro interfaces web ligadas a ele.
@@ -37,7 +95,8 @@ Pronto. Você tem um nó Signet `bitcoind` e quatro interfaces web ligadas a ele
 ## 📖 Índice
 
 - [⚡ Signet Core Study Platform](#-signet-core-study-platform)
-    - [Laboratório completo de Bitcoin Core para estudo — nó, faucet, mempool, assinatura de carteira, dashboard HDMI e terminal `bitcoin-cli` no navegador, tudo em Signet.](#laboratório-completo-de-bitcoin-core-para-estudo--nó-faucet-mempool-assinatura-de-carteira-dashboard-hdmi-e-terminal-bitcoin-cli-no-navegador-tudo-em-signet)
+    - [Laboratório completo de Bitcoin Core para estudo — nó, faucet, mempool, gerenciamento de carteiras, assinatura de transações, dashboard HDMI e terminal `bitcoin-cli` no navegador, tudo em Signet.](#laboratório-completo-de-bitcoin-core-para-estudo--nó-faucet-mempool-gerenciamento-de-carteiras-assinatura-de-transações-dashboard-hdmi-e-terminal-bitcoin-cli-no-navegador-tudo-em-signet)
+  - [📸 Capturas de tela](#-capturas-de-tela)
   - [⚡ TL;DR — Início rápido](#-tldr--início-rápido)
   - [📖 Índice](#-índice)
   - [📦 O que vem na caixa](#-o-que-vem-na-caixa)
@@ -78,7 +137,7 @@ Pronto. Você tem um nó Signet `bitcoind` e quatro interfaces web ligadas a ele
 | ------------------ | ----------------------- | ----------------------------------------- | -------------------------------------------------------- |
 | **bitcoind**       | `signet-bitcoind`       | `bitcoin/bitcoin:29`                      | Nó completo em Signet, JSON-RPC :38332, ZMQ :28332-28335 |
 | **redis**          | `signet-redis`          | `redis:8-alpine`                          | Cache + rate limit + histórico do faucet                 |
-| **web**            | `signet-web`            | `apps/web` (FastAPI)                      | Home, faucet, mempool, wallet lab, container stats, docs |
+| **web**            | `signet-web`            | `apps/web` (FastAPI)                      | Home, faucet, mempool, wallet lab, signing lab, container stats, docs |
 | **display**        | `signet-display`        | `apps/display` (FastAPI)                  | Dashboard HDMI/kiosk                                     |
 | **terminal-webui** | `signet-terminal-webui` | `apps/terminal` (FastAPI + `bitcoin-cli`) | Sandbox que roda `bitcoin-cli` / RPC pelo navegador      |
 | **terminal-proxy** | `signet-terminal-proxy` | `nginx:1.30-alpine`                       | Proxy reverso endurecido na frente do `terminal-webui`   |
@@ -204,7 +263,7 @@ chmod +x scripts/*.sh
 Abra:
 
 ```text
-http://localhost:8080            # Hub web (home + faucet + mempool + wallet + stats + docs)
+http://localhost:8080            # Hub web (home + faucet + mempool + wallet + signing + stats + docs)
 http://localhost:8181            # Display HDMI
 http://localhost:8182            # Terminal Bitcoin Core
 ```
@@ -247,7 +306,7 @@ bitcoin-core-study-platform/
 │   │       ├── core/              env, cliente RPC, segurança, cache, validators
 │   │       ├── routes/            pages, blockchain, mempool, search, faucet, wallet, stats
 │   │       ├── static/            css/, js/, img/
-│   │       └── templates/         home, faucet, mempool, wallet, stats, docs
+│   │       └── templates/         home, faucet, mempool, wallet, signing, stats, docs
 │   │
 │   ├── display/                   Kiosk HDMI (porta 8181)
 │   │   ├── Dockerfile
@@ -287,12 +346,13 @@ App único FastAPI que serve cada página + API do laboratório.
 
 | Path          | O que aparece                                                                   |
 | ------------- | ------------------------------------------------------------------------------- |
-| `/`           | Home — status do nó + cards para cada superfície.                               |
-| `/faucet`     | Solicitação de sBTC; rate limit por IP e por endereço.                          |
-| `/mempool`    | Explorador inspirado no mempool.space (HTML/CSS/JS puro).                       |
-| `/wallet`     | Lab de carteira: criar/carregar/excluir wallets, gerar endereços, assinar PSBT. |
-| `/stats`      | Estatísticas dos containers (CPU/mem/disco/rede), opt-in.                       |
-| `/study-docs` | Notas locais de Bitcoin Core / RPC / ZMQ / wallet em `docs/`.                   |
+| `/`           | Home — status do nó + cards para cada superfície.                                     |
+| `/faucet`     | Solicitação de sBTC; rate limit por IP e por endereço.                                |
+| `/mempool`    | Explorador inspirado no mempool.space (HTML/CSS/JS puro).                             |
+| `/wallet`     | Lab de carteira: criar/carregar/excluir wallets, gerar endereços, gerenciar chaves.   |
+| `/signing`    | Lab de assinatura: criar PSBTs, assinar e transmitir transações.                      |
+| `/stats`      | Estatísticas dos containers (CPU/mem/disco/rede), opt-in.                             |
+| `/study-docs` | Notas locais de Bitcoin Core / RPC / ZMQ / wallet em `docs/`.                         |
 
 ### Superfície de API
 
@@ -396,7 +456,7 @@ O container `terminal-webui` roda como `sandbox` (uid 1000), `read_only: true`, 
 
 | Escopo                | Endereço                            | Observação                          |
 | --------------------- | ----------------------------------- | ----------------------------------- |
-| Hub web               | `127.0.0.1:8080` → `web`            | Faucet, mempool, wallet, stats.     |
+| Hub web               | `127.0.0.1:8080` → `web`            | Faucet, mempool, wallet, signing, stats. |
 | Display HDMI          | `127.0.0.1:8181` → `display`        | Dashboard kiosk.                    |
 | Terminal Bitcoin Core | `127.0.0.1:8182` → nginx → terminal | Sandbox `bitcoin-cli` no navegador. |
 | RPC (interno)         | `bitcoind:38332`                    | Não publicado no host.              |
@@ -449,7 +509,7 @@ Para exposição na internet, adicione:
 - ative `BASIC_AUTH_*`;
 - ative `TURNSTILE_ENABLED=true` no faucet;
 - mantenha `ENABLE_CONTAINER_STATS=false`;
-- nunca exponha `/wallet`, `/api/wallet/*`, `/api/exec`, RPC, ZMQ, Redis ou Docker socket;
+- nunca exponha `/wallet`, `/signing`, `/api/wallet/*`, `/api/exec`, RPC, ZMQ, Redis ou Docker socket;
 - mantenha pouco saldo na wallet do faucet;
 - `TRUST_PROXY_HEADERS=true` apenas se o proxy é seu.
 

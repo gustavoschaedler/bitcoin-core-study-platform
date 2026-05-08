@@ -17,7 +17,8 @@ FastAPI application serving the web UI and API endpoints. Routes include:
 - `/` — Home dashboard with node status
 - `/faucet` — Request test coins
 - `/mempool` — Live mempool explorer
-- `/wallet` — Wallet and signing lab
+- `/wallet` — Wallet lab (create, manage and export wallets)
+- `/signing` — Signing lab (create PSBTs, sign and broadcast transactions)
 - `/stats` — Container resource monitoring
 - `/study-docs` — This documentation viewer
 

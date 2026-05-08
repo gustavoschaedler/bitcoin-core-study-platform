@@ -46,7 +46,7 @@ tcp://bitcoind:28335 hashtx
 
 ## Assinatura
 
-Use `/wallet` para criar uma carteira, derivar um endereço Signet, criar um PSBT e assiná-lo.
+Use `/wallet` para criar uma carteira e derivar um endereço Signet, depois use `/signing` para criar um PSBT, assinar e transmitir.
 
 ## Financiamento do Faucet
 

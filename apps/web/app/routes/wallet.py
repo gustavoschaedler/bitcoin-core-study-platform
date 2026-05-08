@@ -44,40 +44,61 @@ def wallet_overview() -> dict[str, Any]:
                 load_error = str(exc.detail)
 
         balance = None
+        scanning = False
         addresses: list[dict[str, Any]] = []
         if load_error is None:
             try:
                 info = rpc.call("getwalletinfo", wallet=name)
                 balance = info.get("balance")
+                scan_info = info.get("scanning")
+                if isinstance(scan_info, dict):
+                    scanning = scan_info.get("progress", 0)
+                addr_map: dict[str, dict[str, Any]] = {}
                 received = rpc.call(
                     "listreceivedbyaddress", [0, True, True], wallet=name
                 )
-                addresses = [
-                    {
-                        "address": row.get("address"),
-                        "label": row.get("label", ""),
-                        "amount": row.get("amount", 0),
-                        "confirmations": row.get("confirmations", 0),
-                    }
-                    for row in received
-                ]
-                if not addresses:
-                    known = set()
-                    descs = rpc.call("listdescriptors", wallet=name).get("descriptors", [])
-                    for d in descs:
-                        if d.get("internal"):
-                            continue
-                        nxt = d.get("next", 0)
-                        if d.get("range") is None or nxt <= 0:
-                            continue
-                        try:
-                            addrs = rpc.call("deriveaddresses", [d["desc"], [0, nxt - 1]])
-                            for addr in addrs:
-                                if addr not in known:
-                                    known.add(addr)
-                                    addresses.append({"address": addr, "label": "", "amount": 0, "confirmations": 0})
-                        except HTTPException:
-                            pass
+                for row in received:
+                    a = row.get("address")
+                    if a:
+                        addr_map[a] = {
+                            "address": a,
+                            "label": row.get("label", ""),
+                            "amount": row.get("amount", 0),
+                            "confirmations": row.get("confirmations", 0),
+                        }
+                descs = rpc.call("listdescriptors", wallet=name).get("descriptors", [])
+                for d in descs:
+                    if d.get("internal"):
+                        continue
+                    nxt = d.get("next", 0)
+                    if d.get("range") is None or nxt <= 0:
+                        continue
+                    try:
+                        derived = rpc.call("deriveaddresses", [d["desc"], [0, nxt - 1]])
+                        for a in derived:
+                            if a not in addr_map:
+                                addr_map[a] = {"address": a, "label": "", "amount": 0, "confirmations": 0}
+                    except HTTPException:
+                        pass
+                if addr_map:
+                    utxo_bal: dict[str, Decimal] = {}
+                    utxo_conf: dict[str, int] = {}
+                    try:
+                        utxos = rpc.call("listunspent", [0], wallet=name)
+                        for u in utxos:
+                            a = u.get("address", "")
+                            utxo_bal[a] = utxo_bal.get(a, Decimal(0)) + Decimal(str(u.get("amount", 0)))
+                            c = u.get("confirmations", 0)
+                            if a not in utxo_conf or c < utxo_conf[a]:
+                                utxo_conf[a] = c
+                    except HTTPException:
+                        pass
+                    for entry in addr_map.values():
+                        a = entry["address"]
+                        if a in utxo_bal:
+                            entry["amount"] = float(utxo_bal[a])
+                            entry["confirmations"] = utxo_conf.get(a, 0)
+                addresses = list(addr_map.values())
             except HTTPException as exc:
                 load_error = str(exc.detail)
 
@@ -86,6 +107,7 @@ def wallet_overview() -> dict[str, Any]:
                 "name": name,
                 "loaded": name in loaded,
                 "balance": balance,
+                "scanning": scanning,
                 "addresses": addresses,
                 "error": load_error,
             }
@@ -156,6 +178,20 @@ def wallet_delete(name: str = Form(...)) -> dict[str, Any]:
         ) from exc
 
 
+def _export_labels(name: str) -> list[dict[str, str]]:
+    labels: list[dict[str, str]] = []
+    try:
+        received = rpc.call("listreceivedbyaddress", [0, True, True], wallet=name)
+        for row in received:
+            addr = row.get("address", "")
+            label = row.get("label", "")
+            if addr and label:
+                labels.append({"address": addr, "label": label})
+    except HTTPException:
+        pass
+    return labels
+
+
 @router.get("/api/wallet/export")
 def wallet_export(name: str = "") -> dict[str, Any]:
     name = validators.wallet_name(name)
@@ -169,6 +205,7 @@ def wallet_export(name: str = "") -> dict[str, Any]:
         "descriptors": descriptors.get("descriptors", []),
         "descriptor_checksum": descriptors.get("checksum", ""),
         "balance": info.get("balance"),
+        "labels": _export_labels(name),
     }
 
 
@@ -199,6 +236,7 @@ def wallet_export_all() -> dict[str, Any]:
                 "descriptors": descriptors.get("descriptors", []),
                 "descriptor_checksum": descriptors.get("checksum", ""),
                 "balance": info.get("balance"),
+                "labels": _export_labels(name),
             })
         except HTTPException:
             continue
@@ -248,13 +286,18 @@ async def wallet_import(request: Request) -> dict[str, Any]:
                 continue
 
         import_requests = []
+        earliest_ts: int | None = None
         for desc in descriptors:
+            raw_ts = desc.get("timestamp", "now")
             req: dict[str, Any] = {
                 "desc": desc["desc"],
                 "active": desc.get("active", True),
-                "timestamp": desc.get("timestamp", "now"),
+                "timestamp": "now",
                 "internal": desc.get("internal", False),
             }
+            if isinstance(raw_ts, (int, float)) and raw_ts > 0:
+                if earliest_ts is None or int(raw_ts) < earliest_ts:
+                    earliest_ts = int(raw_ts)
             if desc.get("range") is not None:
                 req["range"] = desc["range"]
             if desc.get("next_index") is not None:
@@ -267,7 +310,20 @@ async def wallet_import(request: Request) -> dict[str, Any]:
             result = rpc.call(
                 "importdescriptors", [import_requests], wallet=name, timeout=config.RPC_TIMEOUT_WRITE
             )
-            results.append({"wallet": name, "imported": True, "result": result})
+            for lbl in entry.get("labels", []):
+                addr = lbl.get("address", "")
+                label = lbl.get("label", "")
+                if addr and label:
+                    try:
+                        rpc.call("setlabel", [addr, label], wallet=name)
+                    except HTTPException:
+                        pass
+            if earliest_ts is not None:
+                try:
+                    rpc.call("rescanblockchain", [0], wallet=name, timeout=2)
+                except HTTPException:
+                    pass
+            results.append({"wallet": name, "imported": True, "result": result, "rescanning": earliest_ts is not None})
         except HTTPException as exc:
             results.append({"wallet": name, "error": str(exc.detail)})
 

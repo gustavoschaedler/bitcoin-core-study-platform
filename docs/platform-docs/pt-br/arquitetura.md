@@ -17,7 +17,8 @@ Aplicação FastAPI que serve a interface web e os endpoints da API. As rotas in
 - `/` — Dashboard principal com status do nó
 - `/faucet` — Solicitar moedas de teste
 - `/mempool` — Explorador de mempool em tempo real
-- `/wallet` — Lab de carteira e assinatura
+- `/wallet` — Lab de carteira (criar, gerenciar e exportar carteiras)
+- `/signing` — Lab de assinatura (criar PSBTs, assinar e transmitir transações)
 - `/stats` — Monitoramento de recursos dos containers
 - `/study-docs` — Este visualizador de documentação
 

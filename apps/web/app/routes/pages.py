@@ -72,6 +72,15 @@ def wallet_page(request: Request, lang: str | None = None):
     )
 
 
+@router.get("/signing", response_class=HTMLResponse)
+def signing_page(request: Request, lang: str | None = None):
+    return templates.TemplateResponse(
+        request=request,
+        name="signing.html",
+        context=_ctx(request, lang, current_page="signing"),
+    )
+
+
 @router.get("/stats", response_class=HTMLResponse)
 def stats_page(request: Request, lang: str | None = None):
     return templates.TemplateResponse(

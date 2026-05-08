@@ -1,14 +1,16 @@
 # Wallet and Signing
 
-## Creating a Wallet
+The platform separates wallet management and transaction signing into two dedicated pages.
 
-The wallet lab uses Bitcoin Core's built-in descriptor wallets. Each wallet is created via `createwallet` and stored in the node's wallet directory.
+## Wallet Lab (`/wallet`)
+
+The wallet lab handles wallet lifecycle: creation, loading, deletion, address derivation, import and export. It uses Bitcoin Core's built-in descriptor wallets.
 
 ```bash
 ./scripts/bitcoin-cli.sh createwallet "study-wallet"
 ```
 
-## Generating Addresses
+### Generating Addresses
 
 New addresses are derived from the wallet's descriptor set. The platform generates `bech32m` (Taproot) addresses by default.
 
@@ -16,9 +18,13 @@ New addresses are derived from the wallet's descriptor set. The platform generat
 ./scripts/bitcoin-cli.sh -rpcwallet=study-wallet getnewaddress "" "bech32m"
 ```
 
-## Transaction Signing
+### Import and Export
 
-The signing flow uses PSBTs (Partially Signed Bitcoin Transactions):
+Wallets can be exported (descriptors + keys) and imported as JSON files, enabling backup and migration between nodes.
+
+## Signing Lab (`/signing`)
+
+The signing lab handles transaction creation, signing and broadcasting. The signing flow uses PSBTs (Partially Signed Bitcoin Transactions):
 
 1. **Create** a raw transaction specifying inputs and outputs
 2. **Fund** the transaction with `walletcreatefundedpsbt`
@@ -26,7 +32,7 @@ The signing flow uses PSBTs (Partially Signed Bitcoin Transactions):
 4. **Finalise** with `finalizepsbt`
 5. **Broadcast** with `sendrawtransaction`
 
-The wallet lab UI handles steps 2–5 in a single action.
+The signing lab UI handles steps 2–5 in a single action. Signed transactions are queued for review before broadcasting, and amounts can be entered in either s-sats or sBTC.
 
 ## Useful RPC Commands
 

@@ -5,7 +5,7 @@
   <title>{{ title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/static/css/header.css?v=20260508-cog-v4">
-  <link rel="stylesheet" href="/static/css/home.css?v=20260508-home-icons-v7">
+  <link rel="stylesheet" href="/static/css/home.css?v=20260509-home-4col">
 </head>
 <body data-default-lang="{{ lang }}">
   {% include "_header.html" %}
@@ -53,9 +53,16 @@
       <a class="card" href="/wallet">
         <div class="card-heading">
           <svg class="card-icon" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><circle cx="18" cy="16" r="1"/></svg>
-          <h2 data-i18n="wallet_title">Wallet and signing lab</h2>
+          <h2 data-i18n="wallet_title">Wallet lab</h2>
         </div>
-        <p data-i18n="wallet_text">Create wallets, derive addresses, create PSBTs and sign transactions.</p>
+        <p data-i18n="wallet_text">Create wallets, derive addresses and manage keys.</p>
+      </a>
+      <a class="card" href="/signing">
+        <div class="card-heading">
+          <svg class="card-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
+          <h2 data-i18n="signing_title">Signing lab</h2>
+        </div>
+        <p data-i18n="signing_text">Create PSBTs, sign and broadcast transactions.</p>
       </a>
       <a class="card" href="/stats">
         <div class="card-heading">
@@ -87,7 +94,7 @@
       </a>
     </section>
   </main>
-  <script src="/static/js/header.js?v=20260508-home-icons-v7"></script>
-  <script src="/static/js/i18n.js?v=20260508-home-icons-v7"></script>
+  <script src="/static/js/header.js?v=20260509-home-signing-v1"></script>
+  <script src="/static/js/i18n.js?v=20260509-home-signing-v1"></script>
 </body>
 </html>
