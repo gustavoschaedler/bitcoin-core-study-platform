@@ -25,6 +25,9 @@ def _int(name: str, default: int) -> int:
         return default
 
 
+# --- Version ------------------------------------------------------------------
+APP_VERSION = os.getenv("APP_VERSION", "0.1.0")
+
 # --- Branding / i18n ----------------------------------------------------------
 APP_TITLE = os.getenv("APP_TITLE", "Signet Core Study Platform")
 DEFAULT_LANG = os.getenv("DEFAULT_LANG", "pt-BR")
@@ -39,7 +42,7 @@ RPC_TIMEOUT_READ = float(os.getenv("BITCOIN_RPC_TIMEOUT_READ", "15"))
 RPC_TIMEOUT_WRITE = float(os.getenv("BITCOIN_RPC_TIMEOUT_WRITE", "30"))
 
 # --- Faucet -------------------------------------------------------------------
-FAUCET_AMOUNT_BTC = _decimal("FAUCET_AMOUNT_BTC", "0.001")
+FAUCET_AMOUNT_BTC = _decimal("FAUCET_AMOUNT_BTC", "0.0001")
 FAUCET_COOLDOWN_SECONDS = _int("FAUCET_COOLDOWN_SECONDS", 86400)
 FAUCET_MAX_PER_IP_PER_DAY = _int("FAUCET_MAX_PER_IP_PER_DAY", 3)
 
@@ -78,7 +81,12 @@ REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = _int("REDIS_PORT", 6379)
 
 # --- Filesystem paths ---------------------------------------------------------
+DOCS_DIR = os.getenv("DOCS_DIR", "/app/docs")
 DOCS_FILE = os.getenv("DOCS_FILE", "/app/docs/bitcoin-core-study.md")
+
+# --- Auto-refresh intervals (seconds) -----------------------------------------
+REFRESH_MEMPOOL = _int("REFRESH_MEMPOOL", 5)
+REFRESH_STATS = _int("REFRESH_STATS", 30)
 
 # --- Rate limits (per minute) --------------------------------------------------
 SEARCH_RATE_PER_MIN = _int("SEARCH_RATE_PER_MIN", 6)

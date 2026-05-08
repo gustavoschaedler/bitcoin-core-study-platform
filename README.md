@@ -40,6 +40,8 @@ That's it. You now have a Signet `bitcoind` node and four web surfaces wired to 
 - [⚡ TL;DR — Quick start](#-tldr--quick-start)
 - [📦 What's in the box](#-whats-in-the-box)
 - [✅ Prerequisites](#-prerequisites)
+  - [Minimum system requirements](#minimum-system-requirements)
+  - [Initial Block Download (IBD) time estimates](#initial-block-download-ibd-time-estimates)
 - [⚙️ Configuration (.env)](#️-configuration-env)
 - [🔐 RPC authentication: password vs cookie](#-rpc-authentication-password-vs-cookie)
 - [🚀 Start the stack](#-start-the-stack)
@@ -52,6 +54,7 @@ That's it. You now have a Signet `bitcoind` node and four web surfaces wired to 
 - [🛡️ Network architecture](#️-network-architecture)
 - [🔒 Security hardening](#-security-hardening)
 - [📊 Container stats panel (opt-in)](#-container-stats-panel-opt-in)
+- [📝 Study docs — adding documents](#-study-docs--adding-documents)
 - [💧 Faucet wallet — funding](#-faucet-wallet--funding)
 - [🛠️ CLI scripts](#️-cli-scripts)
 - [💾 Persistence and reset](#-persistence-and-reset)
@@ -78,8 +81,39 @@ Everything ships as Docker images; no host install needed besides Docker.
 ## ✅ Prerequisites
 
 - Docker Engine and Docker Compose (`docker compose` v2 plugin).
-- ~4 GB of free RAM recommended.
 - Free local ports `8080`, `8181`, `8182` (the proxy binds to `127.0.0.1` only).
+
+### Minimum system requirements
+
+| Resource    | Minimum               | Recommended            | Notes                                                                    |
+| ----------- | --------------------- | ---------------------- | ------------------------------------------------------------------------ |
+| **CPU**     | 2 cores               | 4+ cores               | IBD (initial block download) is CPU-intensive; after sync 1 core is enough. |
+| **RAM**     | 4 GB                  | 8 GB                   | `bitcoind` alone uses ~3–4 GB during IBD with `txindex=1`.              |
+| **Storage** | 40 GB SSD             | 60 GB+ SSD             | Signet chain is ~30 GB (May 2026) and grows ~5 GB/year. **SSD strongly recommended** — HDD is 5–10× slower during sync. |
+| **OS**      | Linux (x86_64/arm64)  | Ubuntu 22.04+ / Debian 12+ | Also runs on macOS and Windows (WSL2) for development.               |
+| **Network** | Broadband             | 50+ Mbps               | Downloads ~30 GB of block data during IBD.                              |
+
+> [!TIP]
+> **Raspberry Pi 5 (8 GB) + NVMe** is the best single-board option — syncs in under 1 hour.
+> **Raspberry Pi 4 (8 GB) + SSD** also works well for a permanent lab (~3 hours).
+> The **4 GB models** are tight: Bitcoin Core may OOM during IBD. Use `dbcache=300` in `bitcoin.conf` to reduce memory pressure.
+
+### Initial Block Download (IBD) time estimates
+
+The Signet chain has ~303,000 blocks (May 2026). IBD time varies by hardware:
+
+| Hardware                           | Estimated IBD time | Notes                                     |
+| ---------------------------------- | ------------------ | ----------------------------------------- |
+| Modern PC (NVMe + 4+ cores)       | ~15–20 min         | Fastest scenario.                         |
+| Mid-range PC (SSD + 2 cores)      | ~30–45 min         | Typical laptop.                           |
+| Low-end PC / old laptop (SSD)     | ~1–2 hours         | Older hardware, still usable.             |
+| Raspberry Pi 5 (NVMe HAT)         | ~40–60 min         | Best single-board option. Cortex-A76 + PCIe. |
+| Raspberry Pi 5 (USB SSD)          | ~1–2 hours         | Good option, slightly slower than NVMe.   |
+| Raspberry Pi 5 (SD card)          | ~4–6 hours         | Usable but slow — prefer NVMe or SSD.    |
+| Raspberry Pi 4 (USB SSD)          | ~2–3 hours         | Solid choice for a dedicated lab.         |
+| Raspberry Pi 4 (SD card)          | ~8–12 hours        | **Not recommended** — very slow I/O.     |
+
+After IBD completes, the node stays synced with minimal CPU usage (~1% idle).
 
 ```bash
 docker --version
@@ -114,6 +148,9 @@ Key variables (full list in [`.env.example`](.env.example)):
 | `TRUST_PROXY_HEADERS`                                 | Honour `X-Forwarded-For` (only when behind a trusted reverse proxy).     |
 | `TERMINAL_HOST_PORT`                                  | Host port for the terminal proxy (default `8182`).                       |
 | `SEARCH_RATE_PER_MIN` · `MEMPOOL_DETAIL_RATE_PER_MIN` | Per-IP rate limits.                                                      |
+| `REFRESH_MEMPOOL` · `REFRESH_STATS`                   | Auto-refresh interval in seconds for mempool (default 5) and stats (default 30). |
+| `REFRESH_DISPLAY` · `REFRESH_TERMINAL`                | Auto-refresh interval for HDMI display (default 30) and terminal (default 10).   |
+| `APP_VERSION`                                         | Version shown in the header badge (default `0.1.0`).                     |
 | `ENABLE_CONTAINER_STATS`                              | Show CPU/memory/disk for the project containers (requires the override). |
 
 > [!IMPORTANT]
@@ -282,6 +319,10 @@ Write endpoints (longer timeout):
 | `POST` | `/api/wallet/address`       | New receiving address.                        |
 | `POST` | `/api/wallet/sign`          | Build + sign a PSBT (does NOT broadcast).     |
 | `POST` | `/api/wallet/broadcast`     | `sendrawtransaction` for a signed hex.        |
+| `GET`  | `/api/wallet/export?wallet=X` | Export a single wallet (descriptors + keys). |
+| `GET`  | `/api/wallet/export-all`    | Export all loaded wallets as a single JSON.   |
+| `POST` | `/api/wallet/import`        | Import wallets from an export JSON file.      |
+| `POST` | `/api/docs/rebuild-manifest` | Scan `docs/` and regenerate `manifest.json`. |
 
 > [!CAUTION]
 > Wallet endpoints are designed for a **lab on `127.0.0.1`**. If you publish the stack, lock the surface with `BASIC_AUTH_USERNAME` / `BASIC_AUTH_PASSWORD` (or a real reverse proxy with auth) — there is no per-endpoint auth.
@@ -425,6 +466,68 @@ It only reports project containers: `signet-bitcoind`, `signet-redis`, `signet-w
 
 ---
 
+## 📝 Study docs — adding documents
+
+The `/study-docs` page renders Markdown files from the `docs/` directory. Documents are organised by **section** (a top-level subdirectory) and **locale** (a subdirectory inside each section following the i18n pattern `en-gb`, `pt-br`, etc.).
+
+### Directory layout
+
+```text
+docs/
+├── manifest.json                  ← sidebar menu definition (auto-generated)
+├── platform-docs/                 ← section
+│   ├── en-gb/                     ← locale
+│   │   ├── architecture.md
+│   │   └── wallet-and-signing.md
+│   └── pt-br/
+│       ├── arquitetura.md
+│       └── carteira-e-assinatura.md
+└── core-craft-exercises/          ← another section
+    ├── en-gb/
+    │   ├── lesson-01.md
+    │   └── lesson-02.md
+    └── pt-br/
+        ├── aula-01.md
+        └── aula-02.md
+```
+
+### Adding new documents
+
+1. **Create a section** (or reuse an existing one): add a directory under `docs/`, e.g. `docs/my-topic/`.
+2. **Add locale subdirectories**: create `en-gb/` and/or `pt-br/` inside the section.
+3. **Write Markdown files**: place `.md` files in the appropriate locale directory. Files are paired across locales by alphabetical order within each section — keep file counts consistent across locales.
+4. **Rebuild the manifest**: click the **rebuild button** (↻) at the top-right of the Study Docs sidebar, or call the API directly:
+
+```bash
+curl -X POST http://localhost:8080/api/docs/rebuild-manifest
+```
+
+The endpoint scans every section directory, discovers locale folders and `.md` files, pairs them by sorted index, and writes a fresh `docs/manifest.json`. The page reloads automatically with the updated sidebar.
+
+### Language fallback
+
+When a document is not available in the selected language, the viewer falls back to `en-gb`, then to any other available locale. This means you can start with a single locale and add translations later.
+
+### manifest.json format
+
+The rebuild generates this structure (you can also edit it manually for fine-tuning):
+
+```json
+[
+  {
+    "section": "platform-docs",
+    "title": { "en-gb": "Platform Docs", "pt-br": "Docs da Plataforma" },
+    "docs": [
+      { "key": "architecture", "en-gb": "architecture.md", "pt-br": "arquitetura.md" }
+    ]
+  }
+]
+```
+
+Section titles default to the directory name in title-case. Edit the `"title"` object manually for proper translations.
+
+---
+
 ## 💧 Faucet wallet — funding
 
 This stack does not mine. The faucet only sends what already sits in `FAUCET_WALLET_NAME`.
@@ -434,7 +537,12 @@ This stack does not mine. The faucet only sends what already sits in `FAUCET_WAL
 ./scripts/new-address.sh         # extra addresses
 ```
 
-Send sBTC from a public Signet faucet (e.g. <https://signetfaucet.com/>) to the printed address. After confirmation, `/faucet` distributes `FAUCET_AMOUNT_BTC` per request, gated by `FAUCET_COOLDOWN_SECONDS` per address and `FAUCET_MAX_PER_IP_PER_DAY` per IP.
+Send sBTC from a public Signet faucet to the printed address. After confirmation, `/faucet` distributes `FAUCET_AMOUNT_BTC` per request, gated by `FAUCET_COOLDOWN_SECONDS` per address and `FAUCET_MAX_PER_IP_PER_DAY` per IP.
+
+**External Signet faucets:**
+- <https://signet257.bublina.eu.org/>
+- <https://signetfaucet.com>
+- <https://bitcoinsignetfaucet.com/>
 
 ---
 
@@ -517,7 +625,30 @@ You hit `SEARCH_RATE_PER_MIN`. Wait a minute or raise it in `.env`. The expensiv
 - [Bitcoin Core — docs](https://bitcoincore.org/en/doc/)
 - [Bitcoin RPC reference](https://developer.bitcoin.org/reference/rpc/)
 - [Bitcoin Core Terminal — upstream project](https://github.com/gustavoschaedler/bitcoin-core-terminal)
-- [Signet faucet (public)](https://signetfaucet.com/)
+- [Signet faucet — Bublina](https://signet257.bublina.eu.org/)
+- [Signet faucet — signetfaucet.com](https://signetfaucet.com)
+- [Signet faucet — bitcoinsignetfaucet.com](https://bitcoinsignetfaucet.com/)
+
+---
+
+## ⚡ Donations
+
+If this project helped you and you'd like to support it, buy me a coffee.
+
+<table>
+  <tr>
+    <td align="center">
+      <strong>⛓️ Bitcoin (on-chain)</strong><br><br>
+      <img src="assets/qr_code_onchain.png" alt="Bitcoin on-chain QR" width="180"><br><br>
+      <code>bc1q2hmxr026ahlvreftxqrjdwkq8u7ys2g0d0xf40</code>
+    </td>
+    <td align="center">
+      <strong>⚡ Lightning Network</strong><br><br>
+      <img src="assets/qr_code_lightning.png" alt="Lightning Network QR" width="180"><br><br>
+      <code>btcnow@walletofsatoshi.com</code>
+    </td>
+  </tr>
+</table>
 
 ---
 

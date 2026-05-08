@@ -47,26 +47,32 @@
     .topbar .topbar-right a { color: var(--muted); text-decoration: none; display: inline-flex; align-items: center; }
     .topbar .topbar-right a:hover { color: var(--accent); }
     .topbar .topbar-right svg { width: 20px; height: 20px; display: block; }
+    .countdown-box{display:flex;align-items:baseline;gap:1px;font-family:inherit;color:var(--muted);line-height:1}
+    .countdown-box span{font-size:13px;font-weight:700;color:var(--fg)}
+    .countdown-box small{font-size:11px;font-weight:600;color:var(--muted)}
     .lang-menu { position: relative; }
-    .lang-menu-btn {
-      height: 26px;
-      min-width: 42px;
-      padding: 0 8px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+    .topbar .cog-btn {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      padding: 0;
       border: 1px solid var(--border);
-      border-radius: 999px;
-      background: var(--bg);
-      color: var(--fg);
+      border-radius: 6px;
+      background: transparent;
       cursor: pointer;
-      -webkit-user-select: none;
-      user-select: none;
     }
-    .lang-menu-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .lang-menu-btn .flag { font-size: 14px; line-height: 1; }
-    .lang-menu-btn .chev { font-size: 12px; color: var(--muted); }
-    .lang-menu-btn:hover .chev { color: var(--accent); }
+    .topbar .cog-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: var(--muted);
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .topbar .cog-btn:hover { border-color: var(--accent); background: rgba(247, 147, 26, 0.08); }
+    .topbar .cog-btn:hover svg { stroke: var(--accent); }
 
     .lang-menu-pop {
       position: absolute;
@@ -99,7 +105,9 @@
     .lang-option .flag { font-size: 14px; line-height: 1; }
     .lang-option .label { white-space: nowrap; }
     .lang-option .check { opacity: 0; color: var(--accent); font-weight: 700; }
+    .lang-option.active { background: rgba(247, 147, 26, 0.1); color: var(--accent); }
     .lang-option.active .check { opacity: 1; }
+    .lang-menu-pop[hidden] { display: none; }
     .topbar .version-badge {
       background: var(--bg);
       border: 1px solid var(--border);

@@ -48,7 +48,7 @@ services:
     env_file: [.env]
     depends_on: [bitcoind, redis]
     volumes:
-      - ./docs:/app/docs:ro
+      - ./docs:/app/docs
       - bitcoin-data:/bitcoind-data:ro
     ports:
       - "127.0.0.1:8080:8080"

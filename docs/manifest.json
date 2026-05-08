@@ -1,0 +1,55 @@
+[
+  {
+    "section": "core-craft-exercises",
+    "title": {
+      "en-gb": "Core Craft Exercises",
+      "pt-br": "Core Craft Exercises"
+    },
+    "docs": [
+      {
+        "key": "lesson-01",
+        "en-gb": "lesson-01.md",
+        "pt-br": "aula-01.md"
+      },
+      {
+        "key": "lesson-02",
+        "en-gb": "lesson-02.md",
+        "pt-br": "aula-02.md"
+      },
+      {
+        "key": "lesson-03",
+        "en-gb": "lesson-03.md",
+        "pt-br": "aula-03.md"
+      }
+    ]
+  },
+  {
+    "section": "platform-docs",
+    "title": {
+      "en-gb": "Platform Docs",
+      "pt-br": "Platform Docs"
+    },
+    "docs": [
+      {
+        "key": "architecture",
+        "en-gb": "architecture.md",
+        "pt-br": "arquitetura.md"
+      },
+      {
+        "key": "bitcoin-core-study",
+        "en-gb": "bitcoin-core-study.md",
+        "pt-br": "carteira-e-assinatura.md"
+      },
+      {
+        "key": "signet-faucet",
+        "en-gb": "signet-faucet.md",
+        "pt-br": "estudo-bitcoin-core.md"
+      },
+      {
+        "key": "wallet-and-signing",
+        "en-gb": "wallet-and-signing.md",
+        "pt-br": "faucet-signet.md"
+      }
+    ]
+  }
+]

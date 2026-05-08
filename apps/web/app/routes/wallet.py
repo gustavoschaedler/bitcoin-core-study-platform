@@ -5,11 +5,13 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any
 
-from fastapi import APIRouter, Form, HTTPException
+from fastapi import APIRouter, Form, HTTPException, Request
 
 from ..core import config, rpc, validators
 
 router = APIRouter()
+
+_hidden_wallets: set[str] = set()
 
 
 @router.get("/api/wallet/list")
@@ -20,6 +22,7 @@ def wallet_list() -> Any:
 @router.get("/api/wallet/overview")
 def wallet_overview() -> dict[str, Any]:
     loaded = set(rpc.call("listwallets"))
+    _hidden_wallets.difference_update(loaded)
     directory = rpc.call("listwalletdir").get("wallets", [])
     names = [item.get("name") for item in directory if item.get("name")]
     for name in loaded:
@@ -29,6 +32,8 @@ def wallet_overview() -> dict[str, Any]:
     wallets = []
     for name in names:
         if not config.WALLET_NAME_RE.fullmatch(name):
+            continue
+        if name in _hidden_wallets:
             continue
         load_error: str | None = None
         if name not in loaded:
@@ -56,6 +61,23 @@ def wallet_overview() -> dict[str, Any]:
                     }
                     for row in received
                 ]
+                if not addresses:
+                    known = set()
+                    descs = rpc.call("listdescriptors", wallet=name).get("descriptors", [])
+                    for d in descs:
+                        if d.get("internal"):
+                            continue
+                        nxt = d.get("next", 0)
+                        if d.get("range") is None or nxt <= 0:
+                            continue
+                        try:
+                            addrs = rpc.call("deriveaddresses", [d["desc"], [0, nxt - 1]])
+                            for addr in addrs:
+                                if addr not in known:
+                                    known.add(addr)
+                                    addresses.append({"address": addr, "label": "", "amount": 0, "confirmations": 0})
+                        except HTTPException:
+                            pass
             except HTTPException as exc:
                 load_error = str(exc.detail)
 
@@ -74,6 +96,7 @@ def wallet_overview() -> dict[str, Any]:
 @router.post("/api/wallet/create")
 def wallet_create(name: str = Form(...)) -> Any:
     name = validators.wallet_name(name)
+    _hidden_wallets.discard(name)
     try:
         return rpc.call("createwallet", [name], timeout=config.RPC_TIMEOUT_WRITE)
     except HTTPException as exc:
@@ -123,25 +146,132 @@ def wallet_delete(name: str = Form(...)) -> dict[str, Any]:
         )
 
     try:
-        return {
-            "wallet": name,
-            "deleted": True,
-            "result": rpc.call("deletewallet", [name], timeout=config.RPC_TIMEOUT_WRITE),
-        }
-    except HTTPException as exc:
-        if "Method not found" not in str(exc.detail):
-            raise
         result = rpc.call("unloadwallet", [name], timeout=config.RPC_TIMEOUT_WRITE)
-        return {
-            "wallet": name,
-            "deleted": False,
-            "unloaded": True,
-            "result": result,
-            "warning": (
-                "This Bitcoin Core RPC set does not expose deletewallet; "
-                "wallet was unloaded but files were not removed."
-            ),
-        }
+        _hidden_wallets.add(name)
+        return {"wallet": name, "deleted": True, "result": result}
+    except HTTPException as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to unload wallet: {exc.detail}",
+        ) from exc
+
+
+@router.get("/api/wallet/export")
+def wallet_export(name: str = "") -> dict[str, Any]:
+    name = validators.wallet_name(name)
+    loaded = set(rpc.call("listwallets"))
+    if name not in loaded:
+        rpc.call("loadwallet", [name], timeout=config.RPC_TIMEOUT_WRITE)
+    descriptors = rpc.call("listdescriptors", [True], wallet=name)
+    info = rpc.call("getwalletinfo", wallet=name)
+    return {
+        "wallet": name,
+        "descriptors": descriptors.get("descriptors", []),
+        "descriptor_checksum": descriptors.get("checksum", ""),
+        "balance": info.get("balance"),
+    }
+
+
+@router.get("/api/wallet/export-all")
+def wallet_export_all() -> dict[str, Any]:
+    loaded = set(rpc.call("listwallets"))
+    directory = rpc.call("listwalletdir").get("wallets", [])
+    names = [item.get("name") for item in directory if item.get("name")]
+    for name in loaded:
+        if name not in names:
+            names.append(name)
+
+    wallets = []
+    for name in names:
+        if not config.WALLET_NAME_RE.fullmatch(name):
+            continue
+        if name not in loaded:
+            try:
+                rpc.call("loadwallet", [name], timeout=config.RPC_TIMEOUT_WRITE)
+                loaded.add(name)
+            except HTTPException:
+                continue
+        try:
+            descriptors = rpc.call("listdescriptors", [True], wallet=name)
+            info = rpc.call("getwalletinfo", wallet=name)
+            wallets.append({
+                "wallet": name,
+                "descriptors": descriptors.get("descriptors", []),
+                "descriptor_checksum": descriptors.get("checksum", ""),
+                "balance": info.get("balance"),
+            })
+        except HTTPException:
+            continue
+    return {"wallets": wallets}
+
+
+@router.post("/api/wallet/import")
+async def wallet_import(request: Request) -> dict[str, Any]:
+    body = await request.json()
+
+    entries: list[dict[str, Any]] = []
+    if "wallets" in body:
+        entries = body["wallets"]
+    elif "wallet" in body and "descriptors" in body:
+        entries = [body]
+    else:
+        raise HTTPException(status_code=400, detail="Invalid import format.")
+
+    results = []
+    loaded = set(rpc.call("listwallets"))
+
+    for entry in entries:
+        name = validators.wallet_name(entry.get("wallet", ""))
+        descriptors = entry.get("descriptors", [])
+        if not descriptors:
+            results.append({"wallet": name, "error": "No descriptors found."})
+            continue
+
+        wallet_ready = name in loaded
+        if not wallet_ready:
+            try:
+                rpc.call("loadwallet", [name], timeout=config.RPC_TIMEOUT_WRITE)
+                wallet_ready = True
+            except HTTPException:
+                pass
+
+        if not wallet_ready:
+            try:
+                rpc.call(
+                    "createwallet",
+                    [name, False, True, "", False, True],
+                    timeout=config.RPC_TIMEOUT_WRITE,
+                )
+                wallet_ready = True
+            except HTTPException as exc:
+                results.append({"wallet": name, "error": str(exc.detail)})
+                continue
+
+        import_requests = []
+        for desc in descriptors:
+            req: dict[str, Any] = {
+                "desc": desc["desc"],
+                "active": desc.get("active", True),
+                "timestamp": desc.get("timestamp", "now"),
+                "internal": desc.get("internal", False),
+            }
+            if desc.get("range") is not None:
+                req["range"] = desc["range"]
+            if desc.get("next_index") is not None:
+                req["next_index"] = desc["next_index"]
+            elif desc.get("next") is not None and desc["next"] > 0:
+                req["next_index"] = desc["next"]
+            import_requests.append(req)
+
+        try:
+            result = rpc.call(
+                "importdescriptors", [import_requests], wallet=name, timeout=config.RPC_TIMEOUT_WRITE
+            )
+            results.append({"wallet": name, "imported": True, "result": result})
+        except HTTPException as exc:
+            results.append({"wallet": name, "error": str(exc.detail)})
+
+    return {"results": results}
 
 
 @router.post("/api/wallet/address")

@@ -1286,11 +1286,9 @@ const $helpCards = document.getElementById('help-cards');
 const $langMenu = document.getElementById('lang-menu');
 const $langMenuBtn = document.getElementById('lang-menu-btn');
 const $langMenuPop = document.getElementById('lang-menu-pop');
-const $langFlag = document.getElementById('lang-flag');
 const $langLabelEn = document.getElementById('lang-label-en');
 const $langLabelPt = document.getElementById('lang-label-pt');
 const $langOptions = $langMenuPop ? Array.from($langMenuPop.querySelectorAll('button.lang-option[data-lang]')) : [];
-const $githubLink = document.getElementById('github-link');
 const $logo = document.querySelector('.topbar .logo');
 const SIDEBAR_MIN_WIDTH = 260;
 const SIDEBAR_MAX_WIDTH = 560;
@@ -1303,7 +1301,6 @@ function applyI18nLangMenu() {
     $langMenuBtn.title = t('topbar.languageTitle');
     $langMenuBtn.setAttribute('aria-label', t('topbar.languageTitle'));
   }
-  if ($langFlag) $langFlag.textContent = currentLang === 'pt-BR' ? '🇧🇷' : '🇬🇧';
   if ($langLabelEn) $langLabelEn.textContent = t('topbar.langEnTitle');
   if ($langLabelPt) $langLabelPt.textContent = t('topbar.langPtTitle');
   for (const b of $langOptions) {
@@ -1315,10 +1312,6 @@ function applyI18nLangMenu() {
 
 function applyI18nTopbar() {
   if ($logo) $logo.textContent = t('topbar.logo');
-  if ($githubLink) {
-    $githubLink.title = t('topbar.githubTitle');
-    $githubLink.setAttribute('aria-label', t('topbar.githubAria'));
-  }
   applyI18nLangMenu();
 }
 
@@ -1688,8 +1681,6 @@ try { setHelpCollapsed(localStorage.getItem(HELP_COLLAPSE_KEY) === '1'); } catch
 // ============================================================================
 const $statusDot  = document.getElementById('status-dot');
 const $statusText = document.getElementById('status-text');
-const $appVersion = document.getElementById('app-version');
-const $bitcoinMeta = document.getElementById('bitcoin-meta');
 let lastMeta = null;
 let lastHealth = null;
 
@@ -1718,12 +1709,7 @@ async function refreshMeta() {
 }
 
 function renderMeta() {
-  const v = String(lastMeta?.version ?? '').trim();
-  const brepo = String(lastMeta?.bitcoin_repo ?? '').trim();
-  const bver = String(lastMeta?.bitcoin_version ?? '').trim();
-
-  setBadge($bitcoinMeta, brepo && bver ? `${brepo}:${bver}` : brepo);
-  setBadge($appVersion, v ? t('badges.version', { version: v }) : '');
+  renderStatus();
 }
 
 async function refreshStatus() {
@@ -1752,8 +1738,12 @@ function renderStatus() {
   }
   if (lastHealth.ok) {
     $statusDot.className = 'dot ok';
+    const brepo = String(lastMeta?.bitcoin_repo ?? '').trim();
+    const bver = String(lastMeta?.bitcoin_version ?? '').trim();
+    const coreLabel = brepo && bver ? ` · ${brepo}:${bver}` : brepo ? ` · ${brepo}` : '';
     $statusText.textContent = t('topbar.online', {
       chain: lastHealth.chain,
+      core: coreLabel,
       blocks: lastHealth.blocks,
     });
     return;
@@ -1801,8 +1791,16 @@ globalThis.addEventListener('mousedown', (e) => {
   if (!isLangMenuOpen()) return;
   if ($langMenu && e.target instanceof Node && !$langMenu.contains(e.target)) setLangMenuOpen(false);
 });
+globalThis.addEventListener('mousedown', (e) => {
+  for (const d of document.querySelectorAll('details.split-menu[open]')) {
+    if (e.target instanceof Node && !d.contains(e.target)) d.removeAttribute('open');
+  }
+});
 globalThis.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') setLangMenuOpen(false);
+  if (e.key === 'Escape') {
+    setLangMenuOpen(false);
+    for (const d of document.querySelectorAll('details.split-menu[open]')) d.removeAttribute('open');
+  }
 });
 
 try { await loadSnippetInclude(); } catch {}
@@ -1815,7 +1813,18 @@ lastHealth = null;
 renderStatus();
 await refreshMeta();
 await refreshStatus();
-setInterval(refreshStatus, 10_000);
+
+let _termRefreshSec = 10;
+try { const cfg = await fetch("/api/config").then(r => r.json()); _termRefreshSec = cfg.refresh_interval || 10; } catch(e){}
+setInterval(refreshStatus, _termRefreshSec * 1000);
+
+(function(){
+  const cdVal = document.getElementById("countdown-value");
+  let cdRemain = _termRefreshSec;
+  const origRefresh = refreshStatus;
+  refreshStatus = async function(){ await origRefresh(); cdRemain = _termRefreshSec; if(cdVal) cdVal.textContent = cdRemain; };
+  setInterval(() => { cdRemain = Math.max(0, cdRemain - 1); if(cdVal) cdVal.textContent = cdRemain; }, 1000);
+})();
 
 const p = new Pane();
 panes.set(p.id, p);

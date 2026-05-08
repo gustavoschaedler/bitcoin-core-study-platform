@@ -15,20 +15,20 @@
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.page{width:min(1240px,calc(100% - 28px));margin:0 auto;padding:18px 0 36px}
+.page{width:calc(100% - 60px);margin:0 auto;padding:30px 0}
 .top{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:64px;margin:0 calc((100% - 100vw) / 2) 18px;padding:0 max(14px,calc((100vw - 1240px) / 2));background:var(--top);border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:10px;color:var(--text);text-decoration:none}.logo{width:34px;height:34px;border-radius:50%;background:var(--orange);color:var(--ink);display:grid;place-items:center;font-size:23px;font-weight:900}
 .brand strong{display:block;font-size:17px}.brand span{display:block;color:var(--muted);font-size:12px}
-.lang{display:flex;gap:5px;flex-wrap:wrap}.lang button,.back{border:1px solid var(--line);background:#222a33;color:var(--text);padding:9px 11px;border-radius:6px;text-decoration:none;font-weight:900;cursor:pointer}.lang button.active{background:var(--orange);color:var(--ink);border-color:var(--orange)}.settings-menu{position:relative}.icon-button{width:40px;height:40px;display:grid!important;place-items:center;padding:0!important}.icon-button svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.settings-popover{position:absolute;right:0;top:calc(100% + 8px);z-index:20;display:grid;gap:7px;width:170px;padding:10px;background:#111820;border:1px solid var(--line);border-radius:8px;box-shadow:0 18px 42px rgba(0,0,0,.42)}.settings-popover[hidden]{display:none}.settings-popover span{color:var(--muted);font-size:12px;font-weight:900;text-transform:uppercase}.settings-popover button{width:100%;padding:9px 10px}
+.lang{display:flex;gap:5px;flex-wrap:wrap}.lang button,.back{border:1px solid var(--line);background:#222a33;color:var(--text);padding:9px 11px;border-radius:6px;text-decoration:none;font-weight:900;cursor:pointer}.lang button.active{background:var(--orange);color:var(--ink);border-color:var(--orange)}
 .hero{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:stretch;margin-bottom:14px}.hero.slim{grid-template-columns:1fr}
 .hero>div,.node,.panel,.card,.terminal{background:var(--panel);border:1px solid var(--line);border-radius:8px}
 .hero>div{padding:18px}.badge{display:inline-flex;color:var(--orange);font-weight:900;font-size:12px;text-transform:uppercase}
 h1{font-size:40px;line-height:1.08;margin:8px 0 10px}p{font-size:16px;color:var(--muted);line-height:1.5;max-width:840px;margin:0}.node{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center;padding:18px}.node strong{display:block;font-size:24px}.node small{display:block;color:var(--muted);margin-top:7px}.dot{width:12px;height:12px;background:var(--red);border-radius:50%;display:inline-block;box-shadow:0 0 18px currentColor}.dot.ok{background:var(--green)}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.card{padding:18px;text-decoration:none;color:var(--text);min-height:156px;transition:border-color .15s,background .15s}.card:hover{border-color:rgba(247,147,26,.65);background:var(--panel-2)}
-.card span{color:var(--orange);font-weight:900;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.card h2{font-size:22px;margin:24px 0 9px}.card p{font-size:14px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.card{padding:18px;text-decoration:none;color:var(--text);min-height:156px;transition:border-color .15s,background .15s;display:grid;grid-template-columns:auto 1fr;gap:0 14px;align-content:center}.card:hover{border-color:rgba(247,147,26,.65);background:var(--panel-2)}
+.card-heading{display:contents}.card-icon{width:58px;height:58px;grid-row:1/3;align-self:center;justify-self:center;fill:none;stroke:var(--orange);stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}.card h2{font-size:22px;margin:0;grid-column:2}.card p{font-size:14px;margin:4px 0 0;grid-column:2}
 .terminal{margin-top:12px;padding:18px}.terminal h2,.panel h2{margin:0 0 14px;font-size:20px}.docs-view pre{max-height:none;line-height:1.55}pre{white-space:pre-wrap;background:#11161c;border:1px solid var(--line);border-radius:8px;padding:15px;color:#cdd9e5;overflow:auto}
 .lab-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:14px}.panel{padding:18px}.muted{font-size:14px;margin-bottom:12px}label{display:block;color:var(--muted);font-weight:900;margin:14px 0 7px}input{width:100%;padding:13px;border-radius:6px;background:#11161c;border:1px solid var(--line);color:var(--text);font-size:15px}
-button[type=submit],.panel button{width:100%;margin-top:12px;padding:13px;border-radius:6px;border:1px solid var(--orange);background:var(--orange);font-weight:900;color:var(--ink);cursor:pointer}.metric{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}.metric:last-child{border-bottom:0}.metric span{color:var(--muted)}.metric strong{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-align:right}
+button[type=submit],.panel button:not(.copy-btn){width:100%;margin-top:12px;padding:13px;border-radius:6px;border:1px solid var(--orange);background:var(--orange);font-weight:900;color:var(--ink);cursor:pointer}.metric{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}.metric:last-child{border-bottom:0}.metric span{color:var(--muted)}.metric strong{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-align:right}
 @media(max-width:900px){.hero,.lab-grid{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}.top{position:relative;margin-bottom:14px;padding:10px 0;background:transparent;border-bottom:0}}
 @media(max-width:620px){.page{width:calc(100% - 20px);padding-top:10px}.top{align-items:flex-start;flex-direction:column}.cards{grid-template-columns:1fr}h1{font-size:30px}}
 
@@ -36,3 +36,189 @@ button[type=submit],.panel button{width:100%;margin-top:12px;padding:13px;border
 .node-stats{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:7px}
 .node-stats span{white-space:nowrap}
 .node-stats span+span::before{content:"· ";color:var(--muted);margin-right:4px}
+
+/* Faucet single-column layout */
+.faucet-layout{display:flex;flex-direction:column;gap:14px}
+.faucet-stats-strip{padding:18px}
+.faucet-stats-strip .nsp-row{margin-bottom:0}
+
+/* Faucet — Node stats panel (highlighted) */
+.node-stats-panel{
+  background:linear-gradient(168deg,#1b2128 0%,#1e2530 50%,rgba(247,147,26,.06) 100%);
+  border:1px solid rgba(247,147,26,.25);
+  box-shadow:0 0 28px rgba(247,147,26,.06),inset 0 1px 0 rgba(247,147,26,.08);
+}
+.nsp-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.nsp-header h2{margin:0;font-size:18px;font-weight:900}
+.nsp-icon{width:28px;height:28px;fill:none;stroke:var(--orange);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* Blocks / Peers / Mempool — 3 cards in one row */
+.nsp-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.nsp-card{
+  background:rgba(13,17,23,.6);border:1px solid var(--line);border-radius:8px;
+  padding:14px;display:flex;flex-direction:column;gap:4px;
+  transition:border-color .15s;
+}
+.nsp-card:hover{border-color:rgba(247,147,26,.35)}
+.nsp-card span{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.nsp-card strong{font:900 22px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text);line-height:1.1}
+
+/* (Old balance bar styles removed — balance now uses .nsp-balance-card) */
+
+/* Faucet address row */
+.nsp-address{
+  margin-top:12px;padding:10px 14px;
+  background:rgba(13,17,23,.5);border:1px solid var(--line);border-radius:8px;
+  display:flex;flex-direction:column;gap:5px;
+}
+.nsp-address-label{font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.nsp-address .hash-with-copy{display:flex;align-items:center;gap:8px;min-width:0}
+.nsp-address code{font:600 13px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--orange);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+
+/* Request coins panel — BTC icon heading */
+.panel-title-btc{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:20px}
+.btc-mark{
+  display:grid;place-items:center;width:32px;height:32px;flex-shrink:0;
+  background:var(--orange);color:#160d03;font-size:17px;font-weight:900;
+  border-radius:50%;line-height:1;
+}
+
+/* Transaction flow: origin → amount → destination */
+.tx-flow{
+  background:#0d1117;border:1px solid var(--line);border-radius:8px;
+  padding:12px 14px;margin-bottom:4px;display:flex;flex-direction:column;gap:0;
+}
+.tx-flow-section{display:flex;align-items:flex-start;gap:10px;padding:8px 0}
+.tx-flow-section+.tx-flow-section{border-top:1px solid var(--line)}
+.tx-flow-section.dest{align-items:center}
+.tx-flow-tag{
+  font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;
+  padding:3px 7px;border-radius:4px;flex-shrink:0;min-width:72px;text-align:center;
+}
+.tx-flow-tag.origin{background:rgba(88,166,255,.12);color:#58a6ff;border:1px solid rgba(88,166,255,.25)}
+.tx-flow-tag.dest{background:rgba(57,201,120,.12);color:var(--green);border:1px solid rgba(57,201,120,.25)}
+.tx-flow-origin-info{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.tx-flow-wallet-name{
+  display:inline-flex;align-items:center;gap:5px;
+  font:800 13px Inter,system-ui,sans-serif;color:var(--text);
+}
+.tx-flow-wallet-icon{width:14px;height:14px;stroke:var(--orange);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* Origin address cards */
+.origin-addr-list{display:flex;flex-direction:column;gap:3px}
+.origin-addr-loading{color:var(--muted);font-size:12px}
+.origin-addr{
+  display:flex;flex-direction:column;gap:4px;
+  padding:8px 10px;border-radius:6px;cursor:pointer;
+  border:1px solid transparent;transition:border-color .15s,background .15s;
+}
+.origin-addr:hover{background:rgba(247,147,26,.04);border-color:var(--line)}
+.origin-addr.is-selected{background:rgba(247,147,26,.06);border-color:rgba(247,147,26,.3)}
+.origin-addr-top{display:flex;align-items:center;gap:8px}
+.origin-addr-addr-group{display:flex;align-items:center;gap:6px;min-width:0;flex:1}
+.origin-addr-check{
+  width:18px;height:18px;flex-shrink:0;display:grid;place-items:center;
+  border:1.5px solid var(--line);border-radius:4px;
+  font-size:12px;font-weight:900;color:var(--orange);line-height:1;
+  background:rgba(13,17,23,.5);transition:border-color .15s,background .15s;
+}
+.origin-addr.is-selected .origin-addr-check{border-color:var(--orange);background:rgba(247,147,26,.12)}
+.tx-flow-error{border-color:var(--red)!important;box-shadow:0 0 0 1px var(--red)}
+.origin-addr-text{
+  font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--text);min-width:0;overflow:hidden;white-space:nowrap;
+  display:flex;align-items:center;
+}
+.origin-addr-text mark{
+  background:rgba(247,147,26,.16);color:var(--orange);border-radius:3px;padding:1px 2px;flex-shrink:0;
+}
+.origin-addr-text>span{overflow:hidden;text-overflow:ellipsis;min-width:2ch}
+.origin-addr-label{font-size:11px;font-weight:700;color:var(--muted);padding-left:2px}
+.origin-addr-label-tag{color:var(--muted);opacity:.7;text-transform:uppercase;font-size:10px;letter-spacing:.04em;margin-right:4px}
+.origin-addr-bal{
+  display:flex;flex-direction:column;gap:2px;flex-shrink:0;text-align:right;
+  font:700 13px ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;
+}
+.origin-addr-bal strong{color:var(--orange);font-size:14px}
+.origin-addr-bal strong small{font-weight:700;color:rgba(247,147,26,.6)}
+.origin-addr-bal>small{color:var(--muted);font-size:12px}
+.origin-addr-bal>small small{color:rgba(155,168,181,.6)}
+
+/* Destination input — aligned with origin */
+.tx-flow-dest-input{
+  flex:1;margin:0!important;padding:11px 12px!important;font-size:14px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+/* Centered amount highlight — standalone box */
+.tx-flow-amount-highlight{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:14px 18px;margin:10px 0;
+  background:rgba(247,147,26,.06);border:1px solid rgba(247,147,26,.25);border-radius:8px;
+}
+.tx-flow-amount-stack{display:flex;flex-direction:column;align-items:center;gap:2px}
+.tx-flow-amount-highlight strong{
+  font:900 26px ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--orange);line-height:1;
+}
+.tx-flow-amount-highlight small{
+  font:700 15px ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--muted);
+}
+.tx-flow-arrow-icon{
+  width:16px;height:16px;stroke:var(--orange);stroke-width:2;
+  fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;
+}
+
+/* Request coins — bigger text sizes */
+.panel-title-btc{font-size:22px}
+.tx-flow-tag{font-size:11px;padding:4px 9px}
+.tx-flow-wallet-name{font-size:15px}
+
+/* Faucet summary row (amount left, cooldown right) */
+.faucet-summary{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+  padding:16px 18px;margin-bottom:16px;
+  background:rgba(13,17,23,.5);border:1px solid var(--line);border-radius:8px;
+}
+.faucet-summary-item{display:flex;flex-direction:column;gap:3px}
+.faucet-summary-item.end{text-align:right;align-items:flex-end}
+.faucet-summary-label{font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.faucet-summary-item strong{font:900 22px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--text);line-height:1.3}
+.faucet-summary-item strong span{font:inherit;color:inherit}
+.faucet-summary-item small{font:700 13px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted)}
+
+/* Tx flow: amounts column */
+.tx-flow-amounts{display:flex;flex-direction:column;gap:1px}
+.tx-flow-amounts span{font:700 12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--orange)}
+.tx-flow-amounts small{font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted)}
+
+/* Tx flow: address select */
+.tx-flow-select{
+  flex:1;margin:0;padding:10px 12px;width:100%;
+  font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--text);background:#11161c;border:1px solid var(--line);border-radius:6px;
+  cursor:pointer;min-width:0;
+}
+.tx-flow-select:focus{border-color:var(--orange);outline:none}
+
+/* Tx flow: destination input inline */
+.tx-flow-input{flex:1;margin:0!important;padding:11px!important;font-size:14px}
+
+/* Balance as card (same pattern as blocks/peers/mempool) */
+.nsp-balance-card{
+  background:rgba(247,147,26,.07);
+  border-color:rgba(247,147,26,.3);
+  padding:16px;
+}
+.nsp-balance-card:hover{border-color:rgba(247,147,26,.5)}
+.nsp-balance-card strong{font-size:28px;color:var(--orange)}
+.nsp-balance-card strong small{font-size:15px;font-weight:800;color:rgba(247,147,26,.6);margin-left:5px}
+.nsp-balance-sub{font:800 16px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);line-height:1.3}
+.nsp-balance-sub small{font-size:12px;font-weight:800;color:rgba(155,168,181,.6);margin-left:5px}
+
+/* Faucet result panel (same style as wallet result) */
+.faucet-result-panel{grid-column:1/-1;background:linear-gradient(180deg,#1b2128,#151b22)}
+.faucet-result-panel .panel-heading{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:20px}
+.faucet-result-panel .panel-icon{width:22px;height:22px;fill:none;stroke:var(--orange);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.faucet-result-panel pre{min-height:120px}

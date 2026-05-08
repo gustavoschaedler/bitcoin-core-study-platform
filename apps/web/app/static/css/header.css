@@ -1,0 +1,147 @@
+/* Shared topbar across every page (except the Bitcoin Core terminal).
+   Defensive resets: stats.css and wallet.css ship blanket "a, button" rules
+   that would otherwise leak borders/backgrounds into the unified header. */
+header.topbar{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 18px;margin:0;
+  background:var(--panel,#151a20);
+  border:0;border-bottom:1px solid var(--line,#262d36);border-radius:0;
+  grid-template-columns:none;
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.topbar .brand{
+  display:flex;align-items:center;gap:10px;
+  padding:0;border:0;background:transparent;
+  text-decoration:none;color:var(--text,#eef4fb);font-weight:700;
+}
+.topbar .brand .mark{display:grid;place-items:center;width:34px;height:34px;border-radius:8px;background:var(--orange,#f7931a);color:#1a1a1a;font-weight:900;font-size:18px}
+.topbar .brand-copy{display:flex;flex-direction:column;line-height:1.1}
+.topbar .brand-copy strong{font-size:16px;color:var(--text,#eef4fb)}
+.topbar .brand-copy small{font-size:11.5px;color:var(--muted,#8c98a6)}
+.topbar .primary-nav{display:flex;flex-wrap:wrap;gap:4px;flex:1 1 auto;min-width:0}
+.topbar .primary-nav a{
+  padding:8px 12px;border:0;border-radius:6px;background:transparent;
+  color:var(--muted,#8c98a6);
+  text-decoration:none;font-weight:600;font-size:13px;
+  white-space:nowrap;
+}
+.topbar .primary-nav a:hover{background:rgba(247,147,26,.08);color:var(--text,#eef4fb)}
+.topbar .primary-nav a.active{background:rgba(247,147,26,.16);color:var(--orange,#f7931a)}
+.topbar .top-actions{display:flex;align-items:center;gap:14px}
+.topbar .version-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font:800 11px ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--orange,#f7931a);
+  background:linear-gradient(135deg,rgba(247,147,26,.1) 0%,rgba(247,147,26,.04) 100%);
+  border:1px solid rgba(247,147,26,.25);border-radius:6px;padding:5px 10px;
+  white-space:nowrap;letter-spacing:.02em;
+  box-shadow:0 0 12px rgba(247,147,26,.06);
+}
+.topbar .github-link{
+  display:grid;place-items:center;width:34px;height:34px;
+  color:var(--muted,#8c98a6);border:1px solid var(--line,#262d36);border-radius:6px;
+  background:transparent;text-decoration:none;transition:color .15s,border-color .15s;
+}
+.topbar .github-link:hover{color:var(--text,#eef4fb);border-color:var(--text,#eef4fb)}
+.topbar .github-link svg{width:18px;height:18px}
+.topbar .last-refresh{display:flex;flex-direction:column;line-height:1.1;text-align:right;color:var(--muted,#8c98a6);font-size:11.5px}
+.topbar .last-refresh strong{margin-top:2px;color:var(--text,#eef4fb);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;font-weight:700}
+.topbar .countdown-box{
+  display:flex;align-items:baseline;gap:1px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  color:var(--muted,#8c98a6);line-height:1;
+}
+.topbar .countdown-box[hidden]{display:none}
+.topbar .countdown-box span{font-size:13px;font-weight:700;color:var(--text,#eef4fb)}
+.topbar .countdown-box small{font-size:11px;font-weight:600;color:var(--muted,#8c98a6)}
+.topbar .settings-menu{position:relative}
+.topbar .icon-button{
+  width:36px;height:36px;display:grid;place-items:center;padding:0;
+  background:#222a33;color:var(--orange,#f7931a);
+  border:1px solid var(--line,#262d36);border-radius:6px;cursor:pointer;
+  font-weight:normal;
+}
+.topbar .icon-button:hover{border-color:var(--orange,#f7931a);background:rgba(247,147,26,.14)}
+.topbar .icon-button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.topbar .settings-popover{
+  position:absolute;right:0;top:calc(100% + 8px);min-width:210px;
+  background:var(--panel,#151a20);border:1px solid var(--line,#262d36);border-radius:10px;
+  padding:6px;box-shadow:0 10px 24px rgba(0,0,0,.42);z-index:50;
+  display:flex;flex-direction:column;gap:2px;
+}
+.topbar .settings-popover[hidden]{display:none}
+.topbar .node-search .search-results[hidden]{display:none}
+.topbar .settings-popover .lang-option{
+  width:100%;display:grid;grid-template-columns:22px 1fr 18px;align-items:center;gap:10px;
+  padding:8px 10px;border:1px solid transparent;border-radius:8px;
+  background:transparent;color:var(--text,#eef4fb);cursor:pointer;text-align:left;font-size:13px;
+}
+.topbar .settings-popover .lang-option:hover{border-color:var(--orange,#f7931a);background:rgba(247,147,26,.06)}
+.topbar .settings-popover .lang-option .flag{font-size:14px;line-height:1}
+.topbar .settings-popover .lang-option .label{white-space:nowrap}
+.topbar .settings-popover .lang-option .check{opacity:0;color:var(--orange,#f7931a);font-weight:700}
+.topbar .settings-popover .lang-option.active{background:rgba(247,147,26,.1);color:var(--orange,#f7931a)}
+.topbar .settings-popover .lang-option.active .check{opacity:1}
+
+/* Search box (only on /mempool).
+   mempool.css styles .node-search as a CSS grid — we override to block so the
+   absolutely-positioned icon + submit button sit over the full-width input. */
+.topbar .node-search{
+  position:relative;flex:1 1 320px;max-width:480px;
+  display:block;background:transparent;border:0;border-radius:0;
+  min-width:0;grid-template-columns:none;
+}
+.topbar .node-search input{
+  width:100%;padding:9px 12px 9px 34px;border-radius:6px;
+  background:#11161c;border:1px solid var(--line,#262d36);color:var(--text,#eef4fb);
+  font-size:13px;font-weight:800;height:auto;outline:0;
+}
+.topbar .node-search input:focus{border-color:var(--orange,#f7931a);box-shadow:0 0 0 2px rgba(247,147,26,.12)}
+.topbar .node-search > button[type="submit"]{
+  position:absolute;right:3px;top:3px;padding:6px 10px;border-radius:5px;
+  background:rgba(247,147,26,.16);border:1px solid var(--line,#262d36);color:var(--orange,#f7931a);
+  cursor:pointer;font-size:12px;font-weight:700;
+}
+.topbar .search-mark{
+  position:absolute;left:11px;top:50%;width:12px;height:12px;
+  border:2px solid var(--muted,#8c98a6);border-radius:50%;
+  transform:translateY(-50%);pointer-events:none;
+}
+.topbar .search-mark::before{display:none}
+.topbar .search-mark::after{
+  content:"";position:absolute;width:7px;height:2px;background:var(--muted,#8c98a6);
+  top:9px;left:8px;transform:rotate(45deg);
+}
+.topbar .search-results{
+  position:absolute;left:0;right:0;top:calc(100% + 6px);
+  background:var(--panel,#151a20);border:1px solid var(--line,#262d36);
+  border-radius:6px;max-height:380px;overflow:auto;z-index:40;box-shadow:0 12px 28px rgba(0,0,0,.42);
+}
+
+@media(max-width:880px){
+  .topbar{padding:10px 12px;gap:10px}
+  .topbar .primary-nav{order:5;flex-basis:100%}
+  .topbar .node-search{order:4;flex-basis:100%;max-width:none}
+}
+
+/* Page-level container shared by every screen below the topbar. */
+.page{width:calc(100% - 60px);margin:0 auto;padding:30px 0}
+
+/* Shared hero section (every page except mempool overrides columns). */
+.hero{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:14px}
+.hero>div{background:var(--panel,#1b2128);border:1px solid var(--line,#2f3944);border-radius:8px;padding:18px}
+.hero h1{margin:0;font-size:34px;line-height:1.08}
+.hero p:not(.eyebrow){color:var(--muted,#8c98a6);margin:7px 0 0;line-height:1.45}
+.eyebrow{margin:0 0 6px;color:var(--orange,#f7931a);font-size:12px;font-weight:900;text-transform:uppercase}
+
+/* Copy button next to any hash/address (shared across all pages). */
+.hash-with-copy{display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:100%;text-transform:none}
+.hash-with-copy>:first-child{min-width:0;flex:1 1 auto}
+.copy-btn{
+  flex:0 0 auto;display:inline-grid;place-items:center;width:22px;height:22px;
+  background:transparent;border:1px solid var(--line,#262d36);border-radius:5px;
+  color:var(--muted,#8c98a6);cursor:pointer;padding:0;font-size:0;
+}
+.copy-btn:hover{color:var(--orange,#f7931a);border-color:var(--orange,#f7931a);background:rgba(247,147,26,.08)}
+.copy-btn.copied{color:var(--green,#3cca7d);border-color:var(--green,#3cca7d);background:rgba(60,202,125,.10)}
+.copy-btn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}

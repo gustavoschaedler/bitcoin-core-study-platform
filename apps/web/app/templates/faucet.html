@@ -7,57 +7,121 @@
   {% if turnstile_enabled %}
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   {% endif %}
-  <link rel="stylesheet" href="/static/css/home.css">
+  <link rel="stylesheet" href="/static/css/header.css?v=20260508-cog-v4">
+  <link rel="stylesheet" href="/static/css/home.css?v=20260508-faucet-v9">
 </head>
-<body data-default-lang="{{ lang }}">
+<body data-default-lang="{{ lang }}" data-faucet-wallet="{{ faucet_wallet_name }}">
+  {% include "_header.html" %}
   <main class="page">
-    <header class="top">
-      <a class="back" href="/" data-i18n="back_home">← Home</a>
-      <div class="lang settings-menu">
-        <button id="settings-toggle" class="icon-button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Settings">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 1 1.5h.1a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a2 2 0 1 1 0 4H21a1.6 1.6 0 0 0-1.6 1Z"/></svg>
-        </button>
-        <div id="settings-popover" class="settings-popover" hidden>
-          <span data-i18n="language">Language</span>
-          <button data-lang="pt-BR">PT-BR</button>
-          <button data-lang="en-GB">GB-EN</button>
-        </div>
-      </div>
-    </header>
-
     <section class="hero slim">
       <div>
-        <div class="badge">Signet faucet</div>
+        <div class="badge" data-i18n="faucet_title">Signet faucet</div>
         <h1 data-i18n="faucet_title">Signet faucet</h1>
         <p data-i18n="faucet_page_text">Request Signet coins for local transaction and RPC experiments.</p>
       </div>
     </section>
 
-    <section class="lab-grid">
+    <section class="faucet-layout">
+      <div class="panel node-stats-panel faucet-stats-strip">
+        <div class="nsp-header">
+          <svg viewBox="0 0 24 24" class="nsp-icon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <h2 data-i18n="node_stats">Node stats</h2>
+        </div>
+        <div class="nsp-row nsp-row-4">
+          <div class="nsp-card">
+            <span data-i18n="blocks">Blocks</span>
+            <strong>{{ summary.blocks or "-" }}</strong>
+          </div>
+          <div class="nsp-card">
+            <span data-i18n="peers">Peers</span>
+            <strong>{{ summary.peers or "-" }}</strong>
+          </div>
+          <div class="nsp-card">
+            <span data-i18n="mempool">Mempool</span>
+            <strong>{{ summary.mempool or "-" }}</strong>
+          </div>
+        </div>
+      </div>
+
       <div class="panel">
-        <h2 data-i18n="request_coins">Request coins</h2>
-        <p class="muted"><span data-i18n="amount">Amount</span>: <strong>{{ amount }} sBTC</strong>. <span data-i18n="cooldown">Cooldown</span>: <strong>{{ cooldown }}s</strong>.</p>
+        <h2 class="panel-title-btc">
+          <span class="btc-mark">₿</span>
+          <span data-i18n="request_coins">Request coins</span>
+        </h2>
+
+        <div class="faucet-summary">
+          <div class="faucet-summary-item">
+            <span class="faucet-summary-label" data-i18n="amount">Amount</span>
+            <strong>{{ amount }} sBTC</strong>
+            <small>{{ "{:,}".format((amount|float * 100000000)|int) }} s-sats</small>
+          </div>
+          {% if summary.wallet_balance is not none %}
+          {% set sats = (summary.wallet_balance * 100000000) | int %}
+          <div class="faucet-summary-item">
+            <span class="faucet-summary-label" data-i18n="balance">Balance</span>
+            <strong>{{ "%.8f" | format(summary.wallet_balance) }} sBTC</strong>
+            <small>{{ "{:,}".format(sats) }} s-sats</small>
+          </div>
+          {% else %}
+          <div class="faucet-summary-item">
+            <span class="faucet-summary-label" data-i18n="balance">Balance</span>
+            <strong>-</strong>
+          </div>
+          {% endif %}
+          <div class="faucet-summary-item end">
+            <span class="faucet-summary-label" data-i18n="cooldown">Cooldown</span>
+            <strong>{{ cooldown|int // 3600 }} <span data-i18n="hours">hours</span></strong>
+            <small>{{ "{:,}".format(cooldown|int) }} <span data-i18n="seconds">seconds</span></small>
+          </div>
+        </div>
+
         <form id="faucet-form">
-          <label data-i18n="signet_address">Signet address</label>
-          <input name="address" placeholder="tb1q..." autocomplete="off" required>
+          <div class="tx-flow">
+            <div class="tx-flow-section">
+              <span class="tx-flow-tag origin" data-i18n="origin">Origin</span>
+              <div class="tx-flow-origin-info">
+                <span class="tx-flow-wallet-name">
+                  <svg viewBox="0 0 24 24" class="tx-flow-wallet-icon"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+                  {{ faucet_wallet_name }}
+                </span>
+                <div id="faucet-origin-addresses" class="origin-addr-list">
+                  <span class="origin-addr-loading" data-i18n="loading">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tx-flow-amount-highlight">
+            <svg viewBox="0 0 24 24" class="tx-flow-arrow-icon"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+            <div class="tx-flow-amount-stack">
+              <strong>{{ amount }} sBTC</strong>
+              <small>{{ "{:,}".format((amount|float * 100000000)|int) }} s-sats</small>
+            </div>
+            <svg viewBox="0 0 24 24" class="tx-flow-arrow-icon"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+          </div>
+          <div class="tx-flow">
+            <div class="tx-flow-section dest">
+              <span class="tx-flow-tag dest" data-i18n="destination">Destination</span>
+              <input name="address" class="tx-flow-dest-input" placeholder="tb1q..." autocomplete="off" required>
+            </div>
+          </div>
           {% if turnstile_enabled %}
           <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}"></div>
           {% endif %}
           <button type="submit" data-i18n="send_coins">Send coins</button>
         </form>
-        <pre id="result" data-i18n="ready">Ready.</pre>
       </div>
 
-      <div class="panel">
-        <h2 data-i18n="node_stats">Node stats</h2>
-        <div class="metric"><span data-i18n="blocks">Blocks</span><strong>{{ summary.blocks or "-" }}</strong></div>
-        <div class="metric"><span data-i18n="peers">Peers</span><strong>{{ summary.peers or "-" }}</strong></div>
-        <div class="metric"><span data-i18n="mempool">Mempool</span><strong>{{ summary.mempool or "-" }}</strong></div>
-        <div class="metric"><span data-i18n="balance">Balance</span><strong>{{ summary.wallet_balance_display if summary.wallet_balance is not none else "-" }}</strong></div>
+      <div class="panel faucet-result-panel">
+        <h2 class="panel-heading">
+          <svg viewBox="0 0 24 24" class="panel-icon"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <span data-i18n="result">Result</span>
+        </h2>
+        <pre id="result" data-i18n="ready">Ready.</pre>
       </div>
     </section>
   </main>
-  <script src="/static/js/i18n.js"></script>
-  <script src="/static/js/faucet.js"></script>
+  <script src="/static/js/header.js?v=20260508-faucet-v9"></script>
+  <script src="/static/js/i18n.js?v=20260508-faucet-v9"></script>
+  <script src="/static/js/faucet.js?v=20260508-faucet-v9"></script>
 </body>
 </html>

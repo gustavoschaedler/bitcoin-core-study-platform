@@ -24,11 +24,23 @@ def summary() -> dict[str, Any]:
         zmq = rpc.call("getzmqnotifications")
 
         wallet_balance: Any = None
+        faucet_address: str | None = None
         try:
             info = rpc.call("getwalletinfo", wallet=config.FAUCET_WALLET_NAME)
             wallet_balance = info.get("balance")
+            # Pick the address labelled "faucet", else the one with most received
+            received = rpc.call(
+                "listreceivedbyaddress", [0, True, True],
+                wallet=config.FAUCET_WALLET_NAME,
+            )
+            if received:
+                labelled = [r for r in received if r.get("label") == "faucet"]
+                pool = labelled or received
+                best = max(pool, key=lambda r: r.get("amount", 0))
+                faucet_address = best.get("address")
         except Exception:
             wallet_balance = None
+            faucet_address = None
 
         return {
             "ok": True,
@@ -46,6 +58,7 @@ def summary() -> dict[str, Any]:
             "mempool_min_fee": mempool.get("mempoolminfee"),
             "wallet_balance": wallet_balance,
             "wallet_balance_display": signet_amount_label(wallet_balance),
+            "faucet_address": faucet_address,
             "zmq": zmq,
         }
     except Exception as exc:  # noqa: BLE001 - intentional: surface as page error

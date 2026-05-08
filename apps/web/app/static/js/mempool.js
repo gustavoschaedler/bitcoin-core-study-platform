@@ -3,11 +3,11 @@ const translations = {
     home:"Inicio", mempool:"Mempool", faucet:"Faucet", wallet:"Carteira", stats:"Estatisticas",
     page_title:"Monitor da mempool", subtitle:"Mempool Signet ao vivo, faixas de taxa e blocos projetados.",
     refresh:"Atualizar", high:"Alta prioridade", medium:"Media prioridade", low:"Baixa prioridade",
-    transactions:"Transacoes", in_mempool:"na mempool", latest_transactions:"Transacoes nao confirmadas", node:"No",
+    transactions:"Transacoes", in_mempool:"na mempool", blocks_label:"Blocos", to_be_mined:"a serem minerados", latest_transactions:"Transacoes nao confirmadas", node:"No",
     chain:"Rede", block_height:"Altura", sync:"Sincronia", peers:"Pares", headers:"Headers",
     mempool_bytes:"Bytes da mempool", memory_usage:"Uso de memoria", min_fee:"Taxa minima",
     fee_rate:"Taxa", size:"Tamanho", output:"Saida",
-    projected_blocks:"Blocos a serem minerados", projected_hint:"Estimativa pela ordem de taxas da mempool local", mined_blocks:"Blocos minerados",
+    projected_blocks:"Blocos a serem minerados", projected_hint:"Estimativa pela ordem de taxas da mempool local", mined_blocks:"Últimos blocos minerados",
     projected_block:"Bloco projetado", empty_blocks:"Mempool vazia. Sem blocos projetados.",
     empty_txs:"Mempool vazia.", loading_blocks:"Carregando blocos...", loading_txs:"Carregando transacoes...",
     txs:"transacoes", fees:"taxas", ago:"atras", inputs:"entradas", outputs:"saidas", failed:"Falha ao carregar",
@@ -27,17 +27,20 @@ const translations = {
     sent:"Enviado", transaction_history:"Historico de transacoes", lookup_method:"Fonte da consulta",
     loading_address:"Carregando carteira", loading_address_hint:"Consultando wallets carregadas, UTXOs e historico local do node.",
     balance_history:"Historico de saldo", unspent_outputs:"Saidas nao gastas", address_type:"Tipo", external_view:"Abrir no mempool.space",
-    copy_address:"Copiar endereco", copied:"Copiado", show_qrcode:"Mostrar QR Code"
+    copy_address:"Copiar endereco", copied:"Copiado", show_qrcode:"Mostrar QR Code",
+    nav_home:"Início", nav_faucet:"Faucet", nav_mempool:"Mempool", nav_wallet:"Carteira",
+    nav_stats:"Stats", nav_docs:"Docs", nav_display:"Display", nav_terminal:"Terminal",
+    nav_last_refresh:"Última atualização", brand_subtitle:"Plataforma de estudo do Core"
   },
   "en-GB": {
     home:"Home", mempool:"Mempool", faucet:"Faucet", wallet:"Wallet lab", stats:"Stats",
     page_title:"Mempool monitor", subtitle:"Live Signet mempool, fee buckets and projected blocks.",
     refresh:"Refresh", high:"High priority", medium:"Medium priority", low:"Low priority",
-    transactions:"Transactions", in_mempool:"in mempool", latest_transactions:"Unconfirmed mempool transactions", node:"Node",
+    transactions:"Transactions", in_mempool:"in mempool", blocks_label:"Blocks", to_be_mined:"to be mined", latest_transactions:"Unconfirmed mempool transactions", node:"Node",
     chain:"Chain", block_height:"Block height", sync:"Sync", peers:"Peers", headers:"Headers",
     mempool_bytes:"Mempool bytes", memory_usage:"Memory usage", min_fee:"Min fee",
     fee_rate:"Fee rate", size:"Size", output:"Output",
-    projected_blocks:"Blocks to be mined", projected_hint:"Approximation from local mempool fee order", mined_blocks:"Mined blocks",
+    projected_blocks:"Blocks to be mined", projected_hint:"Approximation from local mempool fee order", mined_blocks:"Mined blocks last",
     projected_block:"Projected block", empty_blocks:"Mempool empty. No projected blocks.",
     empty_txs:"Mempool empty.", loading_blocks:"Loading blocks...", loading_txs:"Loading transactions...",
     txs:"transactions", fees:"fees", ago:"ago", inputs:"inputs", outputs:"outputs", failed:"Failed to load",
@@ -57,7 +60,10 @@ const translations = {
     sent:"Sent", transaction_history:"Transaction history", lookup_method:"Lookup source",
     loading_address:"Loading wallet", loading_address_hint:"Checking loaded wallets, UTXOs and local node history.",
     balance_history:"Balance history", unspent_outputs:"Unspent outputs", address_type:"Type", external_view:"Open on mempool.space",
-    copy_address:"Copy address", copied:"Copied", show_qrcode:"Show QR Code"
+    copy_address:"Copy address", copied:"Copied", show_qrcode:"Show QR Code",
+    nav_home:"Home", nav_faucet:"Faucet", nav_mempool:"Mempool", nav_wallet:"Wallet",
+    nav_stats:"Stats", nav_docs:"Docs", nav_display:"Display", nav_terminal:"Terminal",
+    nav_last_refresh:"Last refresh", brand_subtitle:"Core study platform"
   }
 };
 
@@ -198,6 +204,15 @@ function renderTxRef(txid){
   return `<a class="hash-link" href="${txUrl(txid)}" target="_blank" rel="noopener noreferrer" title="${safe}">${safe}</a>`;
 }
 
+const COPY_ICON_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>`;
+const CHECK_ICON_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="5 12 10 17 19 7"/></svg>`;
+
+function copyButton(value, label){
+  const safe = escapeHtml(value);
+  const aria = escapeHtml(label || "Copy");
+  return `<button type="button" class="copy-btn" data-copy="${safe}" title="${aria}" aria-label="${aria}">${COPY_ICON_SVG}</button>`;
+}
+
 function renderEdgeHash(value, className = "hash-link"){
   if(!value) return "-";
   const safe = escapeHtml(value);
@@ -207,9 +222,14 @@ function renderEdgeHash(value, className = "hash-link"){
   const head = escapeHtml(value.slice(0, 10));
   const tail = escapeHtml(value.slice(-10));
   const middle = escapeHtml(value.slice(10, -10));
-  // Render full value; setupEdgeHash() observes width and collapses the middle
-  // to "…" only if the content overflows.
+  // Render full value; setupEdgeHashes() observes width and collapses the
+  // middle to "…" only if the content overflows.
   return `<span class="${className}" data-edge-hash data-edge-head="${head}" data-edge-mid="${middle}" data-edge-tail="${tail}" title="${safe}"><span class="hash-edge">${head}</span><span class="hash-middle">${middle}</span><span class="hash-edge">${tail}</span></span>`;
+}
+
+function renderEdgeHashWithCopy(value, className = "hash-link", copyLabel){
+  if(!value) return "-";
+  return `<span class="hash-with-copy">${renderEdgeHash(value, className)}${copyButton(value, copyLabel || tr("copy_address") || "Copy")}</span>`;
 }
 
 function setupEdgeHashes(root){
@@ -245,13 +265,13 @@ function renderAddressRef(address){
 function renderIoAddressRef(address){
   if(!address) return escapeHtml(tr("no_address"));
   const safe = escapeHtml(address);
-  return `<button class="address-link io-address-link" type="button" data-address="${safe}" title="${safe}">${renderEdgeHash(address, "io-hash-text")}</button>`;
+  return `<span class="hash-with-copy"><button class="address-link io-address-link" type="button" data-address="${safe}" title="${safe}">${renderEdgeHash(address, "io-hash-text")}</button>${copyButton(address, tr("copy_address"))}</span>`;
 }
 
 function renderIoTxRef(txid){
   if(!txid) return "-";
   const safe = escapeHtml(txid);
-  return `<a class="hash-link io-hash-link" href="${txUrl(txid)}" target="_blank" rel="noopener noreferrer" title="${safe}">${renderEdgeHash(txid, "io-hash-text")}</a>`;
+  return `<span class="hash-with-copy"><a class="hash-link io-hash-link" href="${txUrl(txid)}" target="_blank" rel="noopener noreferrer" title="${safe}">${renderEdgeHash(txid, "io-hash-text")}</a>${copyButton(txid, "Copy TXID")}</span>`;
 }
 
 function renderFullTxid(txid){
@@ -260,9 +280,7 @@ function renderFullTxid(txid){
   const head = escapeHtml(txid.slice(0, 7));
   const body = escapeHtml(txid.slice(7, -7));
   const tail = escapeHtml(txid.slice(-7));
-  return `<a class="txid tx-link" href="#tx=${encodeURIComponent(txid)}" data-txid="${safe}" title="${safe}">
-    <span class="tx-edge">${head}</span>${body}<span class="tx-edge">${tail}</span>
-  </a>`;
+  return `<span class="hash-with-copy"><a class="txid tx-link" href="#tx=${encodeURIComponent(txid)}" data-txid="${safe}" title="${safe}"><span class="tx-edge">${head}</span>${body}<span class="tx-edge">${tail}</span></a>${copyButton(txid, "Copy TXID")}</span>`;
 }
 
 function iconSvg(name){
@@ -280,6 +298,7 @@ function renderBlocks(blocks){
   if(!blocks?.length){
     el.innerHTML = `<div class="loading">${escapeHtml(tr("empty_blocks"))}</div>`;
     $("projected-block-count").textContent = "0";
+    if($("blocks-to-mine-count")) $("blocks-to-mine-count").textContent = "0";
     projectedBlocksSignature = "";
     projectedScrollInitialized = false;
     return;
@@ -288,6 +307,7 @@ function renderBlocks(blocks){
   const sortedBlocks = [...blocks]
     .sort((a,b)=>projectedHeightValue(b) - projectedHeightValue(a));
   $("projected-block-count").textContent = fmt(sortedBlocks.length);
+  if($("blocks-to-mine-count")) $("blocks-to-mine-count").textContent = fmt(sortedBlocks.length);
   const signature = sortedBlocks.map((b, index) => `${projectedHeightValue(b, index)}:${projectedSortValue(b)}:${b.tx_count}:${b.fees}`).join("|");
   if(signature === projectedBlocksSignature) return;
   const previousScroll = el.scrollLeft;
@@ -487,7 +507,10 @@ function renderTxDetail(tx){
 
   <section class="tx-hash-card">
     <span>TXID</span>
-    <a href="${explorer}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(tx.txid)}">${renderEdgeHash(tx.txid, "hash-edges")}</a>
+    <span class="hash-with-copy">
+      <a href="${explorer}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(tx.txid)}">${renderEdgeHash(tx.txid, "hash-edges")}</a>
+      ${copyButton(tx.txid, "Copy TXID")}
+    </span>
   </section>
 
   <section class="io-grid">
@@ -527,7 +550,7 @@ function renderTxDetail(tx){
 async function openTxDetail(txid){
   const modal = $("tx-modal");
   const body = $("tx-detail-body");
-  $("tx-detail-title").innerHTML = renderEdgeHash(txid, "hash-edges");
+  $("tx-detail-title").innerHTML = `<span class="hash-with-copy">${renderEdgeHash(txid, "hash-edges")}${copyButton(txid, "Copy TXID")}</span>`;
   $("tx-detail-title").title = txid;
   setupEdgeHashes($("tx-detail-title"));
   body.innerHTML = `<div class="empty">${escapeHtml(tr("loading_tx"))}</div>`;
@@ -538,7 +561,7 @@ async function openTxDetail(txid){
     const res = await fetch(`/api/mempool/tx/${encodeURIComponent(txid)}`);
     const tx = await res.json();
     if(!res.ok) throw new Error(tx.detail || res.statusText);
-    $("tx-detail-title").innerHTML = renderEdgeHash(tx.txid, "hash-edges");
+    $("tx-detail-title").innerHTML = `<span class="hash-with-copy">${renderEdgeHash(tx.txid, "hash-edges")}${copyButton(tx.txid, "Copy TXID")}</span>`;
     $("tx-detail-title").title = tx.txid;
     body.innerHTML = renderTxDetail(tx);
     setupEdgeHashes(modal);
@@ -726,7 +749,7 @@ function renderAddressDetail(data){
     <div class="address-title-line">
       <div>
         <span>${escapeHtml(tr("address_detail"))}</span>
-        <h2 title="${safeAddress}">${renderEdgeHash(data.address, "hash-edges")}</h2>
+        <h2 title="${safeAddress}"><span class="hash-with-copy">${renderEdgeHash(data.address, "hash-edges")}${copyButton(data.address, tr("copy_address"))}</span></h2>
       </div>
       <div class="address-actions">
         <button class="icon-action" type="button" data-copy-address="${safeAddress}" title="${escapeHtml(tr("copy_address"))}" aria-label="${escapeHtml(tr("copy_address"))}">${iconSvg("copy")}</button>
@@ -1046,6 +1069,7 @@ async function load(){
     if(previousFirstTx !== allTxs[0]?.txid) txPage = 1;
     renderTxPage();
     $("updated").textContent = new Date().toLocaleTimeString(currentLang);
+    if(typeof window.markRefreshed === "function") window.markRefreshed();
   }catch(e){
     $("tx-list").innerHTML = `<div class="empty">${escapeHtml(tr("failed"))}: ${escapeHtml(e)}</div>`;
   }
@@ -1116,8 +1140,32 @@ function enableDragScroll(row){
 }
 
 setLang(currentLang);
+
+// Cog menu (shared header)
+const _cogToggle = $("settings-toggle");
+const _cogPopover = $("settings-popover");
+if(_cogToggle && _cogPopover){
+  _cogToggle.addEventListener("click", () => {
+    const next = !_cogPopover.hidden;
+    _cogPopover.hidden = next;
+    _cogToggle.setAttribute("aria-expanded", String(!next));
+  });
+  document.addEventListener("click", e => {
+    if(e.target.closest(".settings-menu")) return;
+    _cogPopover.hidden = true;
+    _cogToggle.setAttribute("aria-expanded", "false");
+  });
+  document.addEventListener("keydown", e => {
+    if(e.key !== "Escape") return;
+    _cogPopover.hidden = true;
+    _cogToggle.setAttribute("aria-expanded", "false");
+  });
+}
+
 document.querySelectorAll("[data-lang]").forEach(btn => btn.addEventListener("click", () => {
   setLang(btn.dataset.lang);
+  if(_cogPopover) _cogPopover.hidden = true;
+  if(_cogToggle) _cogToggle.setAttribute("aria-expanded", "false");
   load();
 }));
 $("refresh")?.addEventListener("click", load);
@@ -1229,5 +1277,7 @@ $("tx-list").innerHTML = `<div class="empty">${escapeHtml(tr("loading_txs"))}</d
 enableDragScroll($("blocks"));
 enableDragScroll($("mined-blocks"));
 load();
-setInterval(load, 5000);
+const _refreshMs = (parseInt(document.body.dataset.refreshInterval, 10) || 5) * 1000;
+setInterval(load, _refreshMs);
+if(typeof window.startCountdown === "function") window.startCountdown(_refreshMs / 1000);
 openTxFromHash();

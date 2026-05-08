@@ -67,6 +67,7 @@ BITCOIND_COOKIE_FILE = os.getenv(
 
 RPC_BASE = f"http://{BITCOIND_HOST}:{BITCOIND_PORT}"
 RPC_TIMEOUT = float(os.getenv("RPC_TIMEOUT", "30"))
+REFRESH_TERMINAL = int(os.getenv("REFRESH_TERMINAL", "10"))
 
 _candidates = [
     (os.getenv("STATIC_DIR") or "").strip() or None,
@@ -256,6 +257,11 @@ async def health() -> dict[str, Any]:
 @app.get("/api/version")
 async def version() -> dict[str, Any]:
     return {"version": read_app_version()}
+
+
+@app.get("/api/config")
+async def app_config() -> dict[str, Any]:
+    return {"refresh_interval": REFRESH_TERMINAL}
 
 
 @app.get("/api/meta")

@@ -4,25 +4,22 @@
   <meta charset="utf-8">
   <title>{{ title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/static/css/stats.css">
+  <link rel="stylesheet" href="/static/css/header.css?v=20260508-cog-v4">
+  <link rel="stylesheet" href="/static/css/stats.css?v=20260508-stats-v2">
 </head>
-<body data-default-lang="{{ lang }}">
-  <main>
-    <header>
-      <a href="/" data-i18n="back_home">← Home</a>
+<body data-default-lang="{{ lang }}" data-refresh-interval="{{ refresh_interval }}">
+  {% include "_header.html" %}
+  <main class="page">
+    <section class="hero slim">
       <div>
+        <p class="eyebrow">Signet</p>
         <h1 data-i18n="title">Container stats</h1>
         <p data-i18n="subtitle">CPU, memory, network and disk I/O for all project containers.</p>
       </div>
-      <div><button id="refresh-stats" type="button" data-i18n="refresh">Refresh</button><button data-lang="pt-BR">PT-BR</button><button data-lang="en-GB">GB-EN</button></div>
-    </header>
-    <section class="live-bar">
-      <span class="live-dot"></span>
-      <strong data-i18n="live">Live status</strong>
-      <small id="updated-at">-</small>
     </section>
     <section id="cards" class="cards"><div class="empty" data-i18n="loading">Loading...</div></section>
   </main>
-  <script src="/static/js/stats.js"></script>
+  <script src="/static/js/header.js?v=20260508-stats-v2"></script>
+  <script src="/static/js/stats.js?v=20260508-stats-v2"></script>
 </body>
 </html>

@@ -42,6 +42,8 @@ Pronto. Você tem um nó Signet `bitcoind` e quatro interfaces web ligadas a ele
   - [📖 Índice](#-índice)
   - [📦 O que vem na caixa](#-o-que-vem-na-caixa)
   - [✅ Pré-requisitos](#-pré-requisitos)
+    - [Requisitos mínimos de sistema](#requisitos-mínimos-de-sistema)
+    - [Tempo estimado de sincronização (IBD)](#tempo-estimado-de-sincronização-ibd)
   - [⚙️ Configuração (.env)](#️-configuração-env)
   - [🔐 Autenticação RPC: senha vs cookie](#-autenticação-rpc-senha-vs-cookie)
     - [`password` (padrão)](#password-padrão)
@@ -61,6 +63,7 @@ Pronto. Você tem um nó Signet `bitcoind` e quatro interfaces web ligadas a ele
   - [🛡️ Arquitetura de rede](#️-arquitetura-de-rede)
   - [🔒 Hardening de segurança](#-hardening-de-segurança)
   - [📊 Painel de container stats (opt-in)](#-painel-de-container-stats-opt-in)
+  - [📝 Study docs — adicionando documentos](#-study-docs--adicionando-documentos)
   - [💧 Wallet do faucet — fundos](#-wallet-do-faucet--fundos)
   - [🛠️ Scripts CLI](#️-scripts-cli)
   - [💾 Persistência e reset](#-persistência-e-reset)
@@ -87,8 +90,39 @@ Tudo via Docker; nada para instalar no host além do próprio Docker.
 ## ✅ Pré-requisitos
 
 - Docker Engine e Docker Compose (plugin `docker compose` v2).
-- ~4 GB de RAM livres recomendados.
 - Portas locais `8080`, `8181`, `8182` livres (o proxy bind apenas em `127.0.0.1`).
+
+### Requisitos mínimos de sistema
+
+| Recurso           | Mínimo                | Recomendado            | Observações                                                                  |
+| ----------------- | --------------------- | ---------------------- | ---------------------------------------------------------------------------- |
+| **CPU**           | 2 cores               | 4+ cores               | IBD (download inicial dos blocos) é intensivo em CPU; após a sincronização, 1 core é suficiente. |
+| **RAM**           | 4 GB                  | 8 GB                   | `bitcoind` sozinho usa ~3–4 GB durante o IBD com `txindex=1`.               |
+| **Armazenamento** | 40 GB SSD             | 60 GB+ SSD             | A chain Signet tem ~30 GB (maio 2026) e cresce ~5 GB/ano. **SSD fortemente recomendado** — HDD é 5–10× mais lento durante a sincronização. |
+| **SO**            | Linux (x86_64/arm64)  | Ubuntu 22.04+ / Debian 12+ | Também roda em macOS e Windows (WSL2) para desenvolvimento.            |
+| **Rede**          | Banda larga           | 50+ Mbps               | Baixa ~30 GB de dados de blocos durante o IBD.                              |
+
+> [!TIP]
+> **Raspberry Pi 5 (8 GB) + NVMe** é a melhor opção single-board — sincroniza em menos de 1 hora.
+> **Raspberry Pi 4 (8 GB) + SSD** também funciona bem para um laboratório permanente (~3 horas).
+> Os **modelos de 4 GB** são apertados: o Bitcoin Core pode dar OOM durante o IBD. Use `dbcache=300` no `bitcoin.conf` para reduzir o uso de memória.
+
+### Tempo estimado de sincronização (IBD)
+
+A chain Signet possui ~303.000 blocos (maio 2026). O tempo de IBD varia conforme o hardware:
+
+| Hardware                                | Tempo estimado de IBD | Observações                                   |
+| --------------------------------------- | --------------------- | --------------------------------------------- |
+| PC moderno (NVMe + 4+ cores)           | ~15–20 min            | Cenário mais rápido.                          |
+| PC intermediário (SSD + 2 cores)       | ~30–45 min            | Laptop típico.                                |
+| PC antigo / laptop básico (SSD)        | ~1–2 horas            | Hardware mais antigo, ainda utilizável.       |
+| Raspberry Pi 5 (NVMe HAT)             | ~40–60 min            | Melhor opção single-board. Cortex-A76 + PCIe. |
+| Raspberry Pi 5 (SSD USB)              | ~1–2 horas            | Boa opção, levemente mais lento que NVMe.     |
+| Raspberry Pi 5 (cartão SD)            | ~4–6 horas            | Utilizável mas lento — prefira NVMe ou SSD.  |
+| Raspberry Pi 4 (SSD USB)              | ~2–3 horas            | Escolha sólida para laboratório dedicado.     |
+| Raspberry Pi 4 (cartão SD)            | ~8–12 horas           | **Não recomendado** — I/O muito lento.       |
+
+Após o IBD, o nó mantém-se sincronizado com uso mínimo de CPU (~1% em repouso).
 
 ```bash
 docker --version
@@ -122,6 +156,9 @@ Variáveis principais (lista completa em [`.env.example`](.env.example)):
 | `TRUST_PROXY_HEADERS`                                 | Aceitar `X-Forwarded-For` (somente atrás de proxy de confiança).      |
 | `TERMINAL_HOST_PORT`                                  | Porta do host para o proxy do terminal (default `8182`).              |
 | `SEARCH_RATE_PER_MIN` · `MEMPOOL_DETAIL_RATE_PER_MIN` | Rate limit por IP.                                                    |
+| `REFRESH_MEMPOOL` · `REFRESH_STATS`                   | Intervalo de atualização automática em segundos para mempool (padrão 5) e stats (padrão 30). |
+| `REFRESH_DISPLAY` · `REFRESH_TERMINAL`                | Intervalo de atualização para display HDMI (padrão 30) e terminal (padrão 10).               |
+| `APP_VERSION`                                         | Versão exibida no badge do cabeçalho (padrão `0.1.0`).               |
 | `ENABLE_CONTAINER_STATS`                              | Mostra CPU/memória/disco dos containers (precisa do override).        |
 
 > [!IMPORTANT]
@@ -290,6 +327,10 @@ Endpoints de escrita (timeout maior):
 | `POST` | `/api/wallet/address`       | Novo endereço de recebimento.                  |
 | `POST` | `/api/wallet/sign`          | Constrói + assina um PSBT (NÃO faz broadcast). |
 | `POST` | `/api/wallet/broadcast`     | `sendrawtransaction` para um hex assinado.     |
+| `GET`  | `/api/wallet/export?wallet=X` | Exporta uma carteira (descritores + chaves). |
+| `GET`  | `/api/wallet/export-all`    | Exporta todas as carteiras em um único JSON.   |
+| `POST` | `/api/wallet/import`        | Importa carteiras de um arquivo JSON exportado.|
+| `POST` | `/api/docs/rebuild-manifest` | Escaneia `docs/` e regenera `manifest.json`. |
 
 > [!CAUTION]
 > Os endpoints de wallet foram desenhados para um **lab em `127.0.0.1`**. Se publicar a stack, proteja com `BASIC_AUTH_USERNAME` / `BASIC_AUTH_PASSWORD` (ou um proxy reverso real com autenticação) — não há auth por endpoint.
@@ -433,6 +474,68 @@ Ele só reporta containers do projeto: `signet-bitcoind`, `signet-redis`, `signe
 
 ---
 
+## 📝 Study docs — adicionando documentos
+
+A página `/study-docs` renderiza arquivos Markdown do diretório `docs/`. Os documentos são organizados por **seção** (um subdiretório de primeiro nível) e **locale** (um subdiretório dentro de cada seção seguindo o padrão i18n `en-gb`, `pt-br`, etc.).
+
+### Layout dos diretórios
+
+```text
+docs/
+├── manifest.json                  ← definição do menu lateral (gerado automaticamente)
+├── platform-docs/                 ← seção
+│   ├── en-gb/                     ← locale
+│   │   ├── architecture.md
+│   │   └── wallet-and-signing.md
+│   └── pt-br/
+│       ├── arquitetura.md
+│       └── carteira-e-assinatura.md
+└── core-craft-exercises/          ← outra seção
+    ├── en-gb/
+    │   ├── lesson-01.md
+    │   └── lesson-02.md
+    └── pt-br/
+        ├── aula-01.md
+        └── aula-02.md
+```
+
+### Adicionando novos documentos
+
+1. **Crie uma seção** (ou reuse uma existente): adicione um diretório em `docs/`, ex.: `docs/meu-topico/`.
+2. **Adicione subdiretórios de locale**: crie `en-gb/` e/ou `pt-br/` dentro da seção.
+3. **Escreva os arquivos Markdown**: coloque arquivos `.md` no diretório de locale apropriado. Os arquivos são pareados entre locales pela ordem alfabética dentro de cada seção — mantenha a quantidade de arquivos consistente entre os locales.
+4. **Reconstrua o manifesto**: clique no **botão de rebuild** (↻) no canto superior direito da sidebar do Study Docs, ou chame a API diretamente:
+
+```bash
+curl -X POST http://localhost:8080/api/docs/rebuild-manifest
+```
+
+O endpoint escaneia cada diretório de seção, descobre pastas de locale e arquivos `.md`, pareia por índice ordenado e grava um novo `docs/manifest.json`. A página recarrega automaticamente com a sidebar atualizada.
+
+### Fallback de idioma
+
+Quando um documento não está disponível no idioma selecionado, o visualizador faz fallback para `en-gb`, e depois para qualquer outro locale disponível. Isso significa que você pode começar com um único idioma e adicionar traduções depois.
+
+### Formato do manifest.json
+
+O rebuild gera esta estrutura (você também pode editá-lo manualmente para ajustes finos):
+
+```json
+[
+  {
+    "section": "platform-docs",
+    "title": { "en-gb": "Platform Docs", "pt-br": "Docs da Plataforma" },
+    "docs": [
+      { "key": "architecture", "en-gb": "architecture.md", "pt-br": "arquitetura.md" }
+    ]
+  }
+]
+```
+
+Os títulos das seções são gerados a partir do nome do diretório em title-case. Edite o objeto `"title"` manualmente para traduções adequadas.
+
+---
+
 ## 💧 Wallet do faucet — fundos
 
 Esta stack não minera. O faucet só envia o que está em `FAUCET_WALLET_NAME`.
@@ -442,7 +545,12 @@ Esta stack não minera. O faucet só envia o que está em `FAUCET_WALLET_NAME`.
 ./scripts/new-address.sh         # endereços extras
 ```
 
-Mande sBTC de um faucet Signet público (ex.: <https://signetfaucet.com/>) para o endereço impresso. Após confirmação, `/faucet` distribui `FAUCET_AMOUNT_BTC` por solicitação, respeitando `FAUCET_COOLDOWN_SECONDS` por endereço e `FAUCET_MAX_PER_IP_PER_DAY` por IP.
+Mande sBTC de um faucet Signet público para o endereço impresso. Após confirmação, `/faucet` distribui `FAUCET_AMOUNT_BTC` por solicitação, respeitando `FAUCET_COOLDOWN_SECONDS` por endereço e `FAUCET_MAX_PER_IP_PER_DAY` por IP.
+
+**Faucets Signet externos:**
+- <https://signet257.bublina.eu.org/>
+- <https://signetfaucet.com>
+- <https://bitcoinsignetfaucet.com/>
 
 ---
 
@@ -525,7 +633,30 @@ Você bateu o `SEARCH_RATE_PER_MIN`. Espere um minuto ou aumente no `.env`. O ca
 - [Bitcoin Core — docs](https://bitcoincore.org/en/doc/)
 - [Bitcoin RPC reference](https://developer.bitcoin.org/reference/rpc/)
 - [Bitcoin Core Terminal — projeto upstream](https://github.com/gustavoschaedler/bitcoin-core-terminal)
-- [Faucet Signet público](https://signetfaucet.com/)
+- [Faucet Signet — Bublina](https://signet257.bublina.eu.org/)
+- [Faucet Signet — signetfaucet.com](https://signetfaucet.com)
+- [Faucet Signet — bitcoinsignetfaucet.com](https://bitcoinsignetfaucet.com/)
+
+---
+
+## ⚡ Doações
+
+Se este projeto te ajudou e você gostaria de apoiá-lo, me pague um café.
+
+<table>
+  <tr>
+    <td align="center">
+      <strong>⛓️ Bitcoin (on-chain)</strong><br><br>
+      <img src="assets/qr_code_onchain.png" alt="QR Bitcoin on-chain" width="180"><br><br>
+      <code>bc1q2hmxr026ahlvreftxqrjdwkq8u7ys2g0d0xf40</code>
+    </td>
+    <td align="center">
+      <strong>⚡ Lightning Network</strong><br><br>
+      <img src="assets/qr_code_lightning.png" alt="QR Lightning Network" width="180"><br><br>
+      <code>btcnow@walletofsatoshi.com</code>
+    </td>
+  </tr>
+</table>
 
 ---
 

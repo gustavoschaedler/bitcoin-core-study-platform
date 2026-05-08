@@ -13,7 +13,7 @@
     "githubAria": "Open repository on GitHub",
     "connecting": "connecting...",
     "offline": "node offline",
-    "online": "{chain} · blocks {blocks}"
+    "online": "{chain}{core} · blocks {blocks}"
   },
   "sidebar": {
     "snippetsTitle": "Snippets",

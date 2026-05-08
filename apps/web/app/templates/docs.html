@@ -2,31 +2,77 @@
 <html lang="{{ lang }}">
 <head>
   <meta charset="utf-8">
-  <title>{{ title }}</title>
+  <title>{{ title }} · Study Docs</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/static/css/home.css">
+  <link rel="stylesheet" href="/static/css/header.css?v=20260508-cog-v4">
+  <link rel="stylesheet" href="/static/css/docs.css?v=20260508-docs6">
 </head>
 <body data-default-lang="{{ lang }}">
+  {% include "_header.html" %}
   <main class="page">
-    <header class="top">
-      <a class="brand" href="/">
-        <div class="logo">B</div>
-        <div>
-          <strong>Signet Core Study Platform</strong>
-          <span>Bitcoin Core study notes</span>
-        </div>
-      </a>
-      <div class="lang">
-        <button data-lang="pt-BR">PT-BR</button>
-        <button data-lang="en-GB">GB-EN</button>
+    <section class="hero slim">
+      <div>
+        <p class="eyebrow">Signet</p>
+        <h1 data-i18n="docs_title">Study docs</h1>
+        <p data-i18n="docs_subtitle">Bitcoin Core, RPC, ZMQ, signing and wallet reference notes.</p>
       </div>
-    </header>
+    </section>
 
-    <section class="terminal docs-view">
-      <h1>Study Docs</h1>
-      <pre>{{ content | safe }}</pre>
+    <section class="docs-layout">
+      <nav class="docs-sidebar" id="docs-sidebar">
+        <div class="sidebar-header">
+          <h2 data-i18n="study_docs">Documents</h2>
+          <button id="rebuild-manifest" type="button" class="rebuild-btn" title="Rebuild manifest">
+            <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+        </div>
+        <div id="docs-list">
+          {% for section in sections %}
+          <div class="doc-section" data-section="{{ section.key }}">
+            <button type="button" class="doc-section-toggle"
+              data-title-en-gb="{{ section.title_en }}"
+              data-title-pt-br="{{ section.title_pt }}"
+              aria-expanded="true">
+              <svg viewBox="0 0 24 24" class="section-folder"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <span class="section-title">{{ section.title_en }}</span>
+              <svg viewBox="0 0 24 24" class="section-chevron"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <ul class="doc-section-list">
+              {% for doc in section.docs %}
+              <li>
+                <button type="button" class="doc-link"
+                  data-key="{{ doc.key }}"
+                  data-section="{{ doc.section }}"
+                  data-title-en-gb="{{ doc.title_en }}"
+                  data-title-pt-br="{{ doc.title_pt }}"
+                  data-file-en-gb="{{ doc.en_gb }}"
+                  data-file-pt-br="{{ doc.pt_br }}">
+                  <span class="doc-icon">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  </span>
+                  <span class="doc-name">{{ doc.title_en }}</span>
+                  <span class="doc-file">{{ doc.en_gb }}</span>
+                </button>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endfor %}
+          {% if not sections %}
+          <div class="docs-empty" data-i18n="no_docs">No documents found.</div>
+          {% endif %}
+        </div>
+      </nav>
+      <article class="docs-content" id="docs-content">
+        <div class="docs-placeholder">
+          <svg viewBox="0 0 24 24" class="placeholder-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <p data-i18n="select_doc">Select a document from the sidebar to view its contents.</p>
+        </div>
+      </article>
     </section>
   </main>
-  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/i18n.js?v=20260508-docs6"></script>
+  <script src="/static/js/header.js?v=20260508-docs6"></script>
+  <script src="/static/js/docs.js?v=20260508-docs6"></script>
 </body>
 </html>

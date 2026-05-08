@@ -19,6 +19,7 @@ DEFAULT_LANG = os.getenv("DEFAULT_LANG", "pt-BR")
 FAUCET_WALLET_NAME = os.getenv("FAUCET_WALLET_NAME", "faucet")
 BASIC_AUTH_USERNAME = os.getenv("BASIC_AUTH_USERNAME", "")
 BASIC_AUTH_PASSWORD = os.getenv("BASIC_AUTH_PASSWORD", "")
+REFRESH_DISPLAY = int(os.getenv("REFRESH_DISPLAY", "30"))
 
 app = FastAPI(title="Signet Display")
 app.mount("/static", StaticFiles(directory="/app/app/static"), name="static")
@@ -115,7 +116,7 @@ def index(request: Request, lang: str | None = None):
     return templates.TemplateResponse(
         request=request,
         name="display.html",
-        context={"title": APP_TITLE, "s": _summary(), "lang": lang or DEFAULT_LANG},
+        context={"title": APP_TITLE, "s": _summary(), "lang": lang or DEFAULT_LANG, "refresh_interval": REFRESH_DISPLAY},
     )
 
 

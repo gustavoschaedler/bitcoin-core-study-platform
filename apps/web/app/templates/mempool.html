@@ -4,39 +4,11 @@
   <meta charset="utf-8">
   <title>{{ title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/static/css/mempool.css?v=20260507-tx-edges-dyn-3">
+  <link rel="stylesheet" href="/static/css/header.css?v=20260508-cog-v4">
+  <link rel="stylesheet" href="/static/css/mempool.css?v=20260508-mempool-v5">
 </head>
-<body data-default-lang="{{ lang }}">
-  <header class="topbar">
-    <a class="brand" href="/">
-      <span class="mark">₿</span>
-      <span class="brand-copy">
-        <strong>Signet</strong>
-        <small>mempool</small>
-      </span>
-    </a>
-    <nav aria-label="Primary">
-      <a href="/" data-i18n="home">Home</a>
-      <a class="active" href="/mempool" data-i18n="mempool">Mempool</a>
-      <a href="/faucet" data-i18n="faucet">Faucet</a>
-      <a href="/wallet" data-i18n="wallet">Wallet lab</a>
-      <a href="/stats" data-i18n="stats">Stats</a>
-    </nav>
-    <form class="node-search" id="node-search" role="search" autocomplete="off">
-      <span class="search-mark" aria-hidden="true"></span>
-      <input id="node-search-input" type="search" data-i18n-placeholder="search_placeholder" placeholder="Search transaction, block, hash or node metric">
-      <button type="submit" data-i18n="search_button">Search</button>
-      <div class="search-results" id="node-search-results" hidden></div>
-    </form>
-    <div class="top-actions">
-      <span id="updated" aria-live="polite">-</span>
-      <button id="refresh" data-i18n="refresh">Refresh</button>
-      <div class="lang">
-        <button data-lang="pt-BR">PT-BR</button>
-        <button data-lang="en-GB">GB-EN</button>
-      </div>
-    </div>
-  </header>
+<body data-default-lang="{{ lang }}" data-refresh-interval="{{ refresh_interval }}">
+  {% include "_header.html" %}
 
   <main class="main">
     <section class="hero">
@@ -45,9 +17,20 @@
         <h1 data-i18n="page_title">Mempool monitor</h1>
         <p data-i18n="subtitle">Live Signet mempool, fee buckets and projected blocks.</p>
       </div>
-      <div class="hero-status">
+      <div class="hero-counter-box">
+        <span data-i18n="blocks_label">Blocks</span>
+        <div class="counter-value">
+          <svg viewBox="0 0 24 24" class="counter-icon"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          <strong id="blocks-to-mine-count">0</strong>
+        </div>
+        <small data-i18n="to_be_mined">to be mined</small>
+      </div>
+      <div class="hero-counter-box">
         <span data-i18n="transactions">Transactions</span>
-        <strong id="tx-count">-</strong>
+        <div class="counter-value">
+          <svg viewBox="0 0 24 24" class="counter-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <strong id="tx-count">-</strong>
+        </div>
         <small data-i18n="in_mempool">in mempool</small>
       </div>
     </section>
@@ -73,19 +56,19 @@
             <span data-i18n="projected_hint">Approximation from local mempool fee order</span>
           </div>
           <div class="block-row projected" id="blocks">
-            <div class="loading">Loading blocks...</div>
+            <div class="loading" data-i18n="loading_blocks">Loading blocks...</div>
           </div>
         </div>
         <div class="blocks-panel mined-panel">
           <div class="section-title">
             <div class="title-line">
-              <h2 data-i18n="mined_blocks">Mined blocks</h2>
+              <h2 data-i18n="mined_blocks">Mined blocks last</h2>
               <strong class="block-count" id="mined-block-count">0</strong>
             </div>
             <span id="tip-height">-</span>
           </div>
           <div class="block-row mined" id="mined-blocks">
-            <div class="loading">Loading blocks...</div>
+            <div class="loading" data-i18n="loading_blocks">Loading blocks...</div>
           </div>
         </div>
       </section>
@@ -127,7 +110,7 @@
             <span data-i18n="output">Output</span>
           </div>
           <div id="tx-list" class="tx-list">
-            <div class="empty">Loading transactions...</div>
+            <div class="empty" data-i18n="loading_txs">Loading transactions...</div>
           </div>
           <div class="pagination">
             <button id="tx-prev" type="button" data-i18n="previous">Previous</button>
@@ -148,7 +131,7 @@
         <button class="close-detail" type="button" data-close-tx data-i18n="close">Close</button>
       </header>
       <div id="tx-detail-body" class="tx-detail-body">
-        <div class="empty">Loading transaction...</div>
+        <div class="empty" data-i18n="loading_tx">Loading transaction...</div>
       </div>
     </article>
   </div>
@@ -163,7 +146,7 @@
         <button class="close-detail" type="button" data-close-address data-i18n="close">Close</button>
       </header>
       <div id="address-detail-body" class="tx-detail-body">
-        <div class="empty">Loading...</div>
+        <div class="empty" data-i18n="loading_address">Loading...</div>
       </div>
     </article>
   </div>
@@ -178,10 +161,11 @@
         <button class="close-detail" type="button" data-close-block data-i18n="close">Close</button>
       </header>
       <div id="block-detail-body" class="tx-detail-body">
-        <div class="empty">Loading...</div>
+        <div class="empty" data-i18n="loading_block">Loading...</div>
       </div>
     </article>
   </div>
-  <script src="/static/js/mempool.js?v=20260507-tx-edges-dyn-3"></script>
+  <script src="/static/js/header.js?v=20260508-mempool-v5"></script>
+  <script src="/static/js/mempool.js?v=20260508-mempool-v5"></script>
 </body>
 </html>

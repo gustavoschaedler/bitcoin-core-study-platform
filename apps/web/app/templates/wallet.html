@@ -4,68 +4,79 @@
   <meta charset="utf-8">
   <title>{{ title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/static/css/wallet.css?v=20260507-tx-edges-dyn-3">
+  <link rel="stylesheet" href="/static/css/header.css?v=20260508-cog-v4">
+  <link rel="stylesheet" href="/static/css/wallet.css?v=20260508-wallet-v15">
 </head>
 <body data-default-lang="{{ lang }}" data-faucet-wallet="{{ faucet_wallet_name }}">
+  {% include "_header.html" %}
   <main class="page">
-    <header>
-      <a href="/" data-i18n="back_home">← Home</a>
-      <h1 data-i18n="title">Wallet and signing lab</h1>
-      <div class="settings-menu">
-        <button id="settings-toggle" class="icon-button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Settings">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 1 1.5h.1a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a2 2 0 1 1 0 4H21a1.6 1.6 0 0 0-1.6 1Z"/></svg>
-        </button>
-        <div id="settings-popover" class="settings-popover" hidden>
-          <span data-i18n="language">Language</span>
-          <button data-lang="pt-BR">PT-BR</button>
-          <button data-lang="en-GB">GB-EN</button>
-        </div>
+    <section class="hero-row">
+      <div class="hero-info">
+        <p class="eyebrow">Signet</p>
+        <h1 data-i18n="title">Wallet and signing lab</h1>
+        <p data-i18n="subtitle">Create wallets, derive addresses, create PSBTs and sign transactions.</p>
       </div>
-    </header>
-
-    <section class="wallets-panel">
-      <div class="panel-title">
-        <h2 data-i18n="wallets">Existing wallets</h2>
-        <button id="refresh-wallets" type="button" data-i18n="refresh">Refresh</button>
+      <div class="hero-create panel">
+        <h2 class="panel-heading">
+          <svg viewBox="0 0 24 24" class="panel-icon"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+          <span data-i18n="create_wallet">Create wallet</span>
+        </h2>
+        <form id="create-wallet">
+          <input name="name" placeholder="study-wallet" data-i18n-placeholder="wallet_placeholder" required>
+          <button type="submit" data-i18n="create">Create/load</button>
+        </form>
       </div>
-      <div id="wallets-list" class="wallets-list">
-        <div class="empty" data-i18n="loading">Loading...</div>
+      <div id="faucet-wallet-panel" class="hero-faucet panel" hidden>
+        <h2 class="panel-heading">
+          <svg viewBox="0 0 24 24" class="panel-icon"><path d="M12 2v6m0 0l-3-3m3 3l3-3"/><path d="M5 12h14"/><path d="M5 12a7 7 0 0 0 14 0"/></svg>
+          <span>Faucet</span>
+        </h2>
+        <p class="faucet-wallet-desc" data-i18n="no_faucet_wallet">No faucet wallet found. Create one to enable the faucet.</p>
+        <button id="create-faucet-wallet" type="button" data-i18n="create_faucet_wallet">Create faucet wallet</button>
       </div>
     </section>
 
-    <section class="grid">
-      <div class="panel">
-        <h2 data-i18n="create_wallet">Create wallet</h2>
-        <form id="create-wallet">
-          <input name="name" placeholder="study-wallet" data-i18n-placeholder="wallet_placeholder" required>
-          <button data-i18n="create">Create/load</button>
-        </form>
-        <button id="create-faucet-wallet" class="secondary-action" type="button" data-i18n="create_faucet_wallet">Create faucet wallet</button>
-      </div>
+    <section class="wallets-row">
+      <section class="wallets-panel">
+        <div class="panel-title">
+          <h2 class="panel-heading">
+            <svg viewBox="0 0 24 24" class="panel-icon"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+            <span data-i18n="wallets">Existing wallets</span>
+          </h2>
+          <div class="panel-title-actions">
+            <button id="import-wallets" type="button" class="import-btn" data-i18n="import_wallet">Import</button>
+            <button id="export-all-wallets" type="button" class="export-all-btn" data-i18n="export_all">Export all</button>
+          </div>
+        </div>
+        <input type="file" id="import-file-input" accept=".json">
+        <div id="wallets-list" class="wallets-list">
+          <div class="empty" data-i18n="loading">Loading...</div>
+        </div>
+      </section>
+    </section>
 
-      <div class="panel">
-        <h2 data-i18n="new_address">New address</h2>
-        <form id="new-address">
-          <select name="wallet" id="new-address-wallet" required>
+    <section class="grid">
+
+      <div class="panel action-panel">
+        <h2 class="panel-heading">
+          <svg viewBox="0 0 24 24" class="panel-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
+          <span data-i18n="sign_tx">Create and sign transaction</span>
+        </h2>
+        <form id="sign-tx">
+          <select name="wallet" id="sign-tx-wallet" required>
             <option value="" data-i18n="select_wallet">Select wallet</option>
           </select>
-          <input name="label" placeholder="label" data-i18n-placeholder="label_placeholder">
-          <button data-i18n="generate">Generate</button>
-        </form>
-      </div>
-
-      <div class="panel wide">
-        <h2 data-i18n="sign_tx">Create and sign transaction</h2>
-        <form id="sign-tx">
-          <input name="wallet" placeholder="study-wallet" data-i18n-placeholder="wallet_placeholder" required>
           <input name="to_address" placeholder="tb1q..." required>
           <input name="amount" type="number" step="0.00000001" placeholder="0.0001" required>
           <button data-i18n="create_sign">Create PSBT and sign</button>
         </form>
       </div>
 
-      <div class="panel wide">
-        <h2 data-i18n="result">Result</h2>
+      <div class="panel wide result-panel">
+        <h2 class="panel-heading">
+          <svg viewBox="0 0 24 24" class="panel-icon"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <span data-i18n="result">Result</span>
+        </h2>
         <pre id="output" data-i18n="ready">Ready.</pre>
       </div>
     </section>
@@ -74,9 +85,12 @@
   <section id="delete-modal" class="confirm-modal" hidden>
     <div class="confirm-backdrop" data-close-delete></div>
     <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
-      <span class="confirm-kicker" data-i18n="delete_wallet">Delete</span>
+      <div class="confirm-icon-ring">
+        <svg viewBox="0 0 24 24" class="confirm-icon"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-.7 12.1A2 2 0 0 1 16.3 20H7.7a2 2 0 0 1-2-1.9L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+      </div>
       <h2 id="delete-title" data-i18n="delete_title">Delete wallet?</h2>
-      <p id="delete-message"></p>
+      <p class="confirm-wallet-name" id="delete-wallet-name"></p>
+      <p class="confirm-message" id="delete-message"></p>
       <div class="confirm-actions">
         <button id="cancel-delete" type="button" data-i18n="cancel">Cancel</button>
         <button id="confirm-delete" class="danger-action" type="button" data-i18n="confirm_delete">Delete wallet</button>
@@ -84,6 +98,23 @@
     </div>
   </section>
 
-  <script src="/static/js/wallet.js?v=20260507-tx-edges-dyn-3"></script>
+  <section id="export-modal" class="confirm-modal" hidden>
+    <div class="confirm-backdrop" data-close-export></div>
+    <div class="confirm-dialog export-dialog" role="dialog" aria-modal="true" aria-labelledby="export-title">
+      <div class="confirm-icon-ring export-icon-ring">
+        <svg viewBox="0 0 24 24" class="confirm-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </div>
+      <h2 id="export-title">Export wallets?</h2>
+      <div id="export-wallet-list" class="export-wallet-list"></div>
+      <p class="confirm-message export-warning" id="export-warning"></p>
+      <div class="confirm-actions">
+        <button id="cancel-export" type="button" data-i18n="cancel">Cancel</button>
+        <button id="confirm-export" class="export-action" type="button">Export</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="/static/js/header.js?v=20260508-search-fix"></script>
+  <script src="/static/js/wallet.js?v=20260508-wallet-v15"></script>
 </body>
 </html>

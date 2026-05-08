@@ -11,9 +11,31 @@
     <section class="top">
       <div>
         <div class="label" data-i18n="node">SIGNET NODE</div>
-        <h1 id="status">{% if s.ok %}ONLINE{% else %}OFFLINE{% endif %}</h1>
+        <div class="status-row">
+          <h1 id="status">{% if s.ok %}ONLINE{% else %}OFFLINE{% endif %}</h1>
+          <div class="led {% if s.ok %}on{% endif %}"></div>
+        </div>
       </div>
-      <div class="led {% if s.ok %}on{% endif %}"></div>
+      <div class="top-right">
+        <span class="countdown-box" id="countdown-box"><span id="countdown-value">3</span><small>s</small></span>
+        <div class="settings-menu">
+          <button class="cog-btn" id="cog-toggle" type="button" aria-label="Settings">
+            <svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <div class="cog-popover" id="cog-popover" hidden>
+            <button class="lang-option" data-lang="en-GB">
+              <span class="flag">🇬🇧</span>
+              <span class="label">English (UK)</span>
+              <span class="check">✓</span>
+            </button>
+            <button class="lang-option" data-lang="pt-BR">
+              <span class="flag">🇧🇷</span>
+              <span class="label">Português (Brasil)</span>
+              <span class="check">✓</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </section>
     <section class="screen">
       <div class="row"><span data-i18n="chain">CHAIN</span><strong id="chain">{{ s.chain or "-" }}</strong></div>
@@ -24,11 +46,6 @@
       <div class="row"><span data-i18n="mempool_bytes">MEM BYTES</span><strong id="mempool_bytes">{{ s.mempool_bytes or "-" }}</strong></div>
       <div class="row"><span data-i18n="min_fee">MIN FEE</span><strong id="minfee" class="stacked-value"><b>{{ s.minfee_display.btc if s.minfee_display else "-" }}</b><small>{{ s.minfee_display.sats if s.minfee_display else "-" }}</small></strong></div>
       <div class="row"><span data-i18n="balance">BALANCE</span><strong id="balance" class="stacked-value"><b>{{ s.balance_display.btc if s.balance_display else "-" }}</b><small>{{ s.balance_display.sats if s.balance_display else "-" }}</small></strong></div>
-    </section>
-    <section class="footer">
-      <button class="button" data-lang="pt-BR">PT</button>
-      <button class="button" data-lang="en-GB">EN</button>
-      <div class="button"></div>
     </section>
   </main>
   <script>
@@ -64,9 +81,26 @@
         document.getElementById("balance").innerHTML=`<b>${s.balance_display?.btc ?? "-"}</b><small>${s.balance_display?.sats ?? "-"}</small>`;
       }catch(e){}
     }
-    document.querySelectorAll("[data-lang]").forEach((btn) => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
+    document.querySelectorAll("[data-lang]").forEach((btn) => btn.addEventListener("click", () => {
+      setLang(btn.dataset.lang);
+      document.getElementById("cog-popover").hidden = true;
+    }));
+    document.getElementById("cog-toggle").addEventListener("click", () => {
+      const pop = document.getElementById("cog-popover");
+      pop.hidden = !pop.hidden;
+    });
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".settings-menu")) document.getElementById("cog-popover").hidden = true;
+    });
     setLang(currentLang);
-    setInterval(refresh,3000);
+    const cdVal = document.getElementById("countdown-value");
+    const _refreshSec = {{ refresh_interval }};
+    let cdRemain = _refreshSec;
+    function tickCountdown(){ cdVal.textContent = Math.max(0, cdRemain); }
+    const origRefresh = refresh;
+    refresh = async function(){ await origRefresh(); cdRemain = _refreshSec; tickCountdown(); };
+    setInterval(() => { cdRemain = Math.max(0, cdRemain - 1); tickCountdown(); }, 1000);
+    setInterval(refresh, _refreshSec * 1000);
   </script>
 </body>
 </html>
