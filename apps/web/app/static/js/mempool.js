@@ -19,7 +19,7 @@ const translations = {
     witness:"Witness", sequence:"Sequence", raw_hex:"Hex bruto", dependencies:"Dependencias", children:"Filhas",
     source:"Origem", destination:"Destino", value:"Valor", previous_output:"Saida anterior", output_index:"Indice da saida",
     previous:"Anterior", next:"Proxima", page:"Pagina", in_about:"Em ~", minutes:"minutos", decoded_json:"Transacao decodificada",
-    search_button:"Buscar", search_placeholder:"Buscar transacao, endereco, bloco, hash ou metrica do node",
+    search_button:"Buscar", search_placeholder:"Buscar transação, endereço, bloco, hash ou métrica do nó",
     search_no_results:"Nenhum resultado local", block:"Bloco", tx_projected_block:"Bloco projetado", metric:"Metrica", address:"Endereco",
     address_detail:"Detalhes do endereco", confirmed:"Confirmado", unconfirmed:"Nao confirmado",
     balance:"Saldo", received:"Recebido", spent:"Gasto", utxos:"UTXOs", recent_transactions:"Transacoes recentes",

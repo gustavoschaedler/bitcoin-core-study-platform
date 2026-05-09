@@ -17,14 +17,6 @@
     <a id="header-display-link" href="{{ display_url }}" target="_blank" rel="noopener" data-i18n="nav_display">Display</a>
     <a id="header-terminal-link" href="{{ terminal_url }}" target="_blank" rel="noopener" data-i18n="nav_terminal">Terminal</a>
   </nav>
-  {% if show_search %}
-  <form class="node-search" id="node-search" role="search" autocomplete="off">
-    <span class="search-mark" aria-hidden="true"></span>
-    <input id="node-search-input" type="search" data-i18n-placeholder="search_placeholder" placeholder="Search transaction, block, hash or node metric">
-    <button type="submit" data-i18n="search_button">Search</button>
-    <div class="search-results" id="node-search-results" hidden></div>
-  </form>
-  {% endif %}
   <div class="top-actions">
     <span class="version-badge">v{{ version }}</span>
     <a class="github-link" href="https://github.com/gustavoschaedler/bitcoin-core-study-platform" target="_blank" rel="noopener" aria-label="GitHub">

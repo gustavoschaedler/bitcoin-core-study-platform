@@ -61,7 +61,7 @@ def mempool_page(request: Request, lang: str | None = None):
     return templates.TemplateResponse(
         request=request,
         name="mempool.html",
-        context=_ctx(request, lang, current_page="mempool", show_search=True, summary=node.summary(), refresh_interval=config.REFRESH_MEMPOOL),
+        context=_ctx(request, lang, current_page="mempool", summary=node.summary(), refresh_interval=config.REFRESH_MEMPOOL),
     )
 
 

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <title>{{ title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/static/css/header.css?v=20260508-cog-v4">
-  <link rel="stylesheet" href="/static/css/mempool.css?v=20260508-mempool-v5">
+  <link rel="stylesheet" href="/static/css/header.css?v=20260509-search-v1">
+  <link rel="stylesheet" href="/static/css/mempool.css?v=20260509-search-v1">
 </head>
 <body data-default-lang="{{ lang }}" data-refresh-interval="{{ refresh_interval }}">
   {% include "_header.html" %}
@@ -17,6 +17,12 @@
         <h1 data-i18n="page_title">Mempool monitor</h1>
         <p data-i18n="subtitle">Live Signet mempool, fee buckets and projected blocks.</p>
       </div>
+      <form class="search-box" id="node-search" role="search" autocomplete="off">
+        <span class="search-mark" aria-hidden="true"></span>
+        <input id="node-search-input" type="search" data-i18n-placeholder="search_placeholder" placeholder="Search transaction, block, hash or node metric">
+        <button type="submit" data-i18n="search_button">Search</button>
+        <div class="search-results" id="node-search-results" hidden></div>
+      </form>
       <div class="hero-counter-box">
         <span data-i18n="blocks_label">Blocks</span>
         <div class="counter-value">
