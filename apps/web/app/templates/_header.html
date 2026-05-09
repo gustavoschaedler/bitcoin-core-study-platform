@@ -14,8 +14,8 @@
     <a href="/signing" data-i18n="nav_signing" class="{% if current_page == 'signing' %}active{% endif %}">Signing</a>
     <a href="/stats" data-i18n="nav_stats" class="{% if current_page == 'stats' %}active{% endif %}">Stats</a>
     <a href="/study-docs" data-i18n="nav_docs" class="{% if current_page == 'docs' %}active{% endif %}">Docs</a>
-    <a id="header-display-link" href="http://localhost:8181" target="_blank" rel="noopener" data-i18n="nav_display">Display</a>
-    <a id="header-terminal-link" href="http://localhost:8182" target="_blank" rel="noopener" data-i18n="nav_terminal">Terminal</a>
+    <a id="header-display-link" href="{{ display_url }}" target="_blank" rel="noopener" data-i18n="nav_display">Display</a>
+    <a id="header-terminal-link" href="{{ terminal_url }}" target="_blank" rel="noopener" data-i18n="nav_terminal">Terminal</a>
   </nav>
   {% if show_search %}
   <form class="node-search" id="node-search" role="search" autocomplete="off">

@@ -213,11 +213,12 @@ Variáveis principais (lista completa em [`.env.example`](.env.example)):
 | `TURNSTILE_*`                                         | CAPTCHA opcional do Cloudflare Turnstile no faucet.                   |
 | `BASIC_AUTH_USERNAME` · `BASIC_AUTH_PASSWORD`         | HTTP Basic auth opcional cobrindo todas as superfícies.               |
 | `TRUST_PROXY_HEADERS`                                 | Aceitar `X-Forwarded-For` (somente atrás de proxy de confiança).      |
+| `DISPLAY_URL` · `TERMINAL_URL`                        | URLs do Display e Terminal nos links de navegação (default `http://localhost:8181` / `8182`). |
 | `TERMINAL_HOST_PORT`                                  | Porta do host para o proxy do terminal (default `8182`).              |
 | `SEARCH_RATE_PER_MIN` · `MEMPOOL_DETAIL_RATE_PER_MIN` | Rate limit por IP.                                                    |
 | `REFRESH_MEMPOOL` · `REFRESH_STATS`                   | Intervalo de atualização automática em segundos para mempool (padrão 5) e stats (padrão 30). |
 | `REFRESH_DISPLAY` · `REFRESH_TERMINAL`                | Intervalo de atualização para display HDMI (padrão 30) e terminal (padrão 10).               |
-| `APP_VERSION`                                         | Versão exibida no badge do cabeçalho (padrão `0.1.0`).               |
+| `APP_VERSION`                                         | Versão exibida no badge do cabeçalho (padrão `0.1.1`).               |
 | `ENABLE_CONTAINER_STATS`                              | Mostra CPU/memória/disco dos containers (precisa do override).        |
 
 > [!IMPORTANT]

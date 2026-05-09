@@ -22,6 +22,8 @@ def _ctx(request: Request, lang: str | None, *, current_page: str | None = None,
         "lang": lang or config.DEFAULT_LANG,
         "current_page": current_page,
         "show_search": show_search,
+        "display_url": config.DISPLAY_URL,
+        "terminal_url": config.TERMINAL_URL,
         **extra,
     }
 

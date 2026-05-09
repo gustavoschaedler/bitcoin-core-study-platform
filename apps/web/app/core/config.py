@@ -26,7 +26,7 @@ def _int(name: str, default: int) -> int:
 
 
 # --- Version ------------------------------------------------------------------
-APP_VERSION = os.getenv("APP_VERSION", "0.1.0")
+APP_VERSION = os.getenv("APP_VERSION", "0.1.1")
 
 # --- Branding / i18n ----------------------------------------------------------
 APP_TITLE = os.getenv("APP_TITLE", "Signet Core Study Platform")
@@ -71,6 +71,10 @@ PROJECT_CONTAINER_NAMES = {
     "signet-terminal-webui",
     "signet-terminal-proxy",
 }
+
+# --- Display & Terminal URLs --------------------------------------------------
+DISPLAY_URL = os.getenv("DISPLAY_URL", "http://localhost:8181")
+TERMINAL_URL = os.getenv("TERMINAL_URL", "http://localhost:8182")
 
 # --- Auth ---------------------------------------------------------------------
 BASIC_AUTH_USERNAME = os.getenv("BASIC_AUTH_USERNAME", "")
