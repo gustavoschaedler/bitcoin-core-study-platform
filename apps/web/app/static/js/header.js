@@ -1,18 +1,10 @@
-// Shared header behaviour: rewrites the Display / Terminal nav links to the
-// current host, and exposes window.markRefreshed() so each page's data loader
-// can stamp the "last refresh" timestamp.
+// Shared header behaviour: exposes window.markRefreshed() so each page's data
+// loader can stamp the "last refresh" timestamp, and universal copy buttons.
 
 (function(){
   const lang = document.documentElement.lang || document.body?.dataset.defaultLang || "pt-BR";
 
-  const display = document.getElementById("header-display-link");
-  if(display && location.hostname){
-    display.href = `${location.protocol}//${location.hostname}:8181`;
-  }
-  const terminal = document.getElementById("header-terminal-link");
-  if(terminal && location.hostname){
-    terminal.href = `${location.protocol}//${location.hostname}:8182`;
-  }
+  // Display & Terminal hrefs are set server-side via DISPLAY_URL / TERMINAL_URL env vars.
 
   function format(){
     return new Date().toLocaleTimeString(localStorage.getItem("lang") || lang);

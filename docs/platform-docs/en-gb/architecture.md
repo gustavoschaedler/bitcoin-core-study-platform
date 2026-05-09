@@ -28,11 +28,11 @@ Caching layer for RPC responses, rate limiting, and faucet cooldown tracking.
 
 ### display
 
-HDMI dashboard optimised for a connected screen, showing real-time node metrics.
+HDMI dashboard optimised for a connected screen, showing real-time node metrics. The navigation links in the web UI point to the URL defined in the `DISPLAY_URL` environment variable (default `http://localhost:8181`).
 
 ### terminal-webui / terminal-proxy
 
-Browser-based terminal with direct `bitcoin-cli` and JSON-RPC access to the Signet node.
+Browser-based terminal with direct `bitcoin-cli` and JSON-RPC access to the Signet node. The navigation links in the web UI point to the URL defined in the `TERMINAL_URL` environment variable (default `http://localhost:8182`).
 
 ## Authentication Modes
 

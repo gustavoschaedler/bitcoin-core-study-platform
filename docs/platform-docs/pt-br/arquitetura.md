@@ -28,11 +28,11 @@ Camada de cache para respostas RPC, rate limiting e controle de cooldown do fauc
 
 ### display
 
-Dashboard HDMI otimizado para uma tela conectada, exibindo métricas do nó em tempo real.
+Dashboard HDMI otimizado para uma tela conectada, exibindo métricas do nó em tempo real. Os links de navegação na interface web apontam para a URL definida na variável de ambiente `DISPLAY_URL` (padrão `http://localhost:8181`).
 
 ### terminal-webui / terminal-proxy
 
-Terminal no navegador com acesso direto ao `bitcoin-cli` e JSON-RPC no nó Signet.
+Terminal no navegador com acesso direto ao `bitcoin-cli` e JSON-RPC no nó Signet. Os links de navegação na interface web apontam para a URL definida na variável de ambiente `TERMINAL_URL` (padrão `http://localhost:8182`).
 
 ## Modos de Autenticação
 
